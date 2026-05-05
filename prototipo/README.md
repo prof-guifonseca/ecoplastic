@@ -1,6 +1,6 @@
 # EcoPlastic — Protótipo Funcional
 
-Protótipo navegável da plataforma **EcoPlastic** (Recycle-as-a-Service para condomínios). Transformação do mockup `ecoplastic-app.html` num app real com estado persistido, fluxos completos, gráficos e PDF de verdade.
+Protótipo navegável da plataforma **EcoPlastic** (Recycle-as-a-Service para condomínios). SPA vanilla com estado persistido, fluxos completos, gráficos Chart.js, QR Code real e PDF do ESG via jsPDF.
 
 ## Como abrir
 
@@ -81,4 +81,4 @@ DevTools → Application → Local Storage → apagar `eco:v1` → recarregar.
 
 ## Fora de escopo (intencional)
 
-- Backend, autenticação real, pagamentos, PDF assinado, validação real do QR, PWA/offline, testes automatizados, responsividade mobile do dashboard admin (preserva layout desktop do mockup).
+- Backend, autenticação real, pagamentos, PDF assinado, validação real do QR, PWA/offline, testes automatizados, responsividade mobile do dashboard admin (mantém layout desktop).

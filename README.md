@@ -6,9 +6,8 @@
 
 | Arquivo / pasta | O que é |
 | --- | --- |
-| `index.html` | Hub: três cards levando para apresentação, mockup e protótipo |
+| `index.html` | Hub: dois cards levando para apresentação e protótipo |
 | `ecoplastic.html` | Apresentação do projeto: pitch, BOM, render 3D do compactador |
-| `ecoplastic-app.html` | Mockup das telas (visão Síndico / Morador) — design language inicial |
 | `prototipo/` | Protótipo navegável: SPA vanilla com estado em `localStorage`, gráficos Chart.js, QR code real, PDF do ESG via jsPDF |
 
 ## Rodando localmente
