@@ -6,9 +6,9 @@
 
 | Arquivo / pasta | O que é |
 | --- | --- |
-| `index.html` | Hub: dois cards levando para apresentação e protótipo |
-| `ecoplastic.html` | Apresentação do projeto: pitch, BOM, render 3D do compactador |
-| `prototipo/` | Protótipo navegável: SPA vanilla com estado em `localStorage`, gráficos Chart.js, QR code real, PDF do ESG via jsPDF |
+| `index.html` | Entrada do site: hero medalhão + 2 CTAs primários (Síndico · Morador) + link "Conheça o equipamento" |
+| `ecoplastic.html` | Conheça o equipamento: pitch, BOM e render 3D do compactador |
+| `prototipo/` | App navegável (SPA vanilla com `localStorage`, Chart.js, QR code real, PDF do ESG via jsPDF). Aceita `?p=sindico` / `?p=morador` para auto-login |
 
 ## Rodando localmente
 

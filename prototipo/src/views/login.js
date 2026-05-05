@@ -17,7 +17,8 @@ export function renderLogin(root) {
             </div>
           </div>
           <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
-            <a href="../ecoplastic.html" style="color:var(--c-muted);font-size:12px;text-decoration:none;padding:6px 10px;border:1px solid var(--c-border);border-radius:8px">📑 apresentação do projeto</a>
+            <a href="../" style="color:var(--c-muted);font-size:12px;text-decoration:none;padding:6px 10px;border:1px solid var(--c-border);border-radius:8px">← voltar à entrada</a>
+            <a href="../ecoplastic.html" style="color:var(--c-muted);font-size:12px;text-decoration:none;padding:6px 10px;border:1px solid var(--c-border);border-radius:8px">📑 conheça o equipamento</a>
           </div>
         </div>
         <p class="login-sub">Escolha o perfil para iniciar a demonstração.</p>

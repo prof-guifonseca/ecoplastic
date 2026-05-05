@@ -6,81 +6,193 @@
   <title>EcoPlastic — Recycle-as-a-Service</title>
   <meta name="description" content="Compactador inteligente de PET para condomínios + plataforma SaaS de gestão e ESG." />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ctext y='20' font-size='22'%3E♻️%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
+    :root{
+      --bg-0:#0a0e1a;
+      --bg-1:#10172a;
+      --bg-2:#1a2236;
+      --gold:#d4a460;
+      --gold-2:#b58c4a;
+      --gold-soft:rgba(212,164,96,.18);
+      --green:#2ecc71;
+      --green-soft:rgba(46,204,113,.20);
+      --parchment:#e8dcc0;
+      --parchment-dim:#9a8f7a;
+      --line:rgba(232,220,192,.12);
+    }
     *{box-sizing:border-box;margin:0;padding:0}
+    html,body{min-height:100%}
     body{
-      font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+      font-family:'Manrope',-apple-system,'Segoe UI',Roboto,sans-serif;
       background:
-        radial-gradient(900px 500px at 15% -10%, rgba(46,204,113,.15), transparent 60%),
-        radial-gradient(700px 400px at 110% 110%, rgba(243,156,18,.12), transparent 60%),
-        #0a1218;
-      color:#e8ecf2;
+        radial-gradient(800px 480px at 50% -10%, rgba(212,164,96,.10), transparent 70%),
+        radial-gradient(600px 500px at 50% 100%, rgba(46,204,113,.08), transparent 60%),
+        var(--bg-0);
+      color:var(--parchment);
       min-height:100vh;
       display:grid;place-items:center;
-      padding:32px;
+      padding:48px 24px;
+      overflow-x:hidden;
     }
-    .wrap{max-width:880px;width:100%}
-    .brand{display:flex;align-items:center;gap:14px;margin-bottom:8px}
-    .logo{
-      width:52px;height:52px;border-radius:14px;
-      background:linear-gradient(135deg,#2ecc71,#1abc9c);
-      display:grid;place-items:center;font-size:28px;
+    .wrap{max-width:560px;width:100%;text-align:center}
+
+    .eyebrow{
+      font-family:'Manrope',sans-serif;
+      font-size:11px;font-weight:600;
+      letter-spacing:.32em;text-transform:uppercase;
+      color:var(--gold);
+      opacity:.85;
     }
-    h1{font-size:32px;letter-spacing:-.5px}
-    .sub{color:#8a9aa8;font-size:15px;margin:0 0 32px}
+
+    /* ================= MEDALHÃO ================= */
+    .medal{
+      width:280px;height:280px;margin:36px auto 28px;
+      position:relative;display:grid;place-items:center;
+    }
+    .medal svg{width:100%;height:100%;display:block}
+    .ring,.ring-2{transform-origin:140px 140px;}
+    .ring{animation:spin-cw 22s linear infinite}
+    .ring-2{animation:spin-ccw 32s linear infinite}
+    .dots{transform-origin:140px 140px;animation:spin-cw 18s linear infinite}
+    .dots-2{transform-origin:140px 140px;animation:spin-ccw 26s linear infinite}
+    @keyframes spin-cw{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+    @keyframes spin-ccw{from{transform:rotate(0)}to{transform:rotate(-360deg)}}
+    .core-glow{filter:drop-shadow(0 0 22px rgba(46,204,113,.55))}
+    .pulse{animation:pulse 4.5s ease-in-out infinite}
+    @keyframes pulse{
+      0%,100%{opacity:.95;transform:scale(1)}
+      50%{opacity:1;transform:scale(1.03)}
+    }
+    .core-emoji{
+      position:absolute;inset:0;display:grid;place-items:center;
+      font-size:38px;
+      filter:drop-shadow(0 0 12px rgba(46,204,113,.6));
+      pointer-events:none;
+    }
+
+    /* ================= TÍTULO ================= */
+    h1{
+      font-family:'Cormorant Garamond',Georgia,serif;
+      font-weight:600;
+      font-size:60px;line-height:1.05;letter-spacing:-.5px;
+      color:#f4ead4;
+      margin:14px 0 22px;
+    }
     .lead{
-      background:linear-gradient(135deg,rgba(46,204,113,.10),rgba(243,156,18,.06));
-      border:1px solid rgba(46,204,113,.25);
-      border-radius:14px;padding:20px;margin-bottom:24px;color:#cfd6df;
+      font-size:16px;line-height:1.6;color:var(--parchment);
+      max-width:480px;margin:0 auto 16px;
     }
-    .lead b{color:#fff}
-    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
-    .card{
-      background:#0f1923;border:1px solid #1d3349;border-radius:14px;
-      padding:22px;text-decoration:none;color:inherit;
-      transition:.2s;display:flex;flex-direction:column;gap:6px;
+    .lead.dim{color:var(--parchment-dim);margin-bottom:36px}
+
+    /* ================= CTAs ================= */
+    .cta-stack{display:flex;flex-direction:column;gap:12px;align-items:center}
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;
+      width:100%;max-width:420px;
+      padding:18px 24px;border-radius:999px;
+      font-family:'Manrope',sans-serif;font-weight:600;font-size:15px;
+      text-decoration:none;cursor:pointer;
+      transition:.2s ease;
+      border:1px solid transparent;
     }
-    .card:hover{border-color:#2ecc71;transform:translateY(-3px);box-shadow:0 12px 30px rgba(0,0,0,.35)}
-    .card .ico{font-size:30px;margin-bottom:6px}
-    .card h3{font-size:16px;color:#fff}
-    .card p{color:#8a9aa8;font-size:13px;line-height:1.5}
-    .card .pill{margin-top:auto;font-size:11px;color:#74e3a4;background:rgba(46,204,113,.10);
-      border:1px solid rgba(46,204,113,.30);border-radius:99px;padding:4px 10px;width:fit-content}
-    .card.proto{border-color:rgba(46,204,113,.4);background:linear-gradient(180deg,#0f1923,rgba(46,204,113,.06))}
-    footer{margin-top:32px;color:#5e6f80;font-size:12px;text-align:center}
-    @media (max-width:720px){.grid{grid-template-columns:1fr}h1{font-size:24px}}
+    .btn.primary{
+      background:linear-gradient(180deg,#dcb070,#b58c4a);
+      color:#1a0f00;
+      box-shadow:0 12px 30px rgba(212,164,96,.30), inset 0 1px 0 rgba(255,255,255,.20);
+    }
+    .btn.primary:hover{transform:translateY(-1px);box-shadow:0 18px 38px rgba(212,164,96,.40), inset 0 1px 0 rgba(255,255,255,.25)}
+    .btn.secondary{
+      background:rgba(255,255,255,.04);
+      border-color:rgba(232,220,192,.18);
+      color:var(--parchment);
+    }
+    .btn.secondary:hover{background:rgba(255,255,255,.08);border-color:rgba(232,220,192,.30)}
+    .link-tertiary{
+      margin-top:22px;display:inline-flex;align-items:center;gap:8px;
+      color:var(--parchment);opacity:.85;
+      text-decoration:none;font-size:14px;font-weight:500;
+      transition:.2s ease;padding:8px 14px;border-radius:8px;
+    }
+    .link-tertiary:hover{opacity:1;color:var(--gold);transform:translateX(2px)}
+    .link-tertiary .arrow{transition:transform .2s ease}
+    .link-tertiary:hover .arrow{transform:translateX(4px)}
+
+    footer{
+      margin-top:48px;
+      color:var(--parchment-dim);
+      font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+      opacity:.5;
+    }
+
+    @media (max-width:520px){
+      h1{font-size:44px}
+      .medal{width:220px;height:220px;margin-top:20px}
+      body{padding:32px 18px}
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .ring,.ring-2,.dots,.dots-2,.pulse{animation:none}
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="brand">
-      <div class="logo">♻️</div>
-      <div>
-        <h1>EcoPlastic</h1>
-        <div class="sub">Recycle-as-a-Service · compactador + plataforma SaaS para condomínios</div>
-      </div>
+    <div class="eyebrow">Recycle-as-a-Service</div>
+
+    <div class="medal" aria-hidden="true">
+      <svg viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg">
+        <!-- anel externo -->
+        <g class="ring-2">
+          <circle cx="140" cy="140" r="118" fill="none" stroke="rgba(212,164,96,.20)" stroke-width="1" />
+          <circle cx="140" cy="140" r="118" fill="none" stroke="rgba(212,164,96,.55)" stroke-width="1" stroke-dasharray="3 8" />
+        </g>
+        <!-- anel intermediário -->
+        <g class="ring">
+          <circle cx="140" cy="140" r="92" fill="none" stroke="rgba(232,220,192,.10)" stroke-width="1" />
+          <circle cx="140" cy="140" r="92" fill="none" stroke="rgba(232,220,192,.40)" stroke-width="1" stroke-dasharray="2 6" />
+        </g>
+        <!-- dots no anel externo -->
+        <g class="dots-2">
+          <circle cx="140" cy="22" r="4" fill="#d4a460" />
+          <circle cx="34" cy="200" r="3" fill="rgba(232,220,192,.55)" />
+          <circle cx="246" cy="200" r="3" fill="rgba(232,220,192,.55)" />
+        </g>
+        <!-- dots no anel interno -->
+        <g class="dots">
+          <circle cx="140" cy="48" r="2.5" fill="rgba(212,164,96,.55)" />
+          <circle cx="232" cy="140" r="2" fill="rgba(232,220,192,.40)" />
+        </g>
+        <!-- núcleo verde com glow -->
+        <g class="core-glow pulse">
+          <circle cx="140" cy="140" r="56" fill="#0e2a1c" stroke="rgba(46,204,113,.60)" stroke-width="2" />
+          <circle cx="140" cy="140" r="42" fill="rgba(46,204,113,.10)" />
+        </g>
+      </svg>
+      <div class="core-emoji">♻️</div>
     </div>
 
-    <div class="lead">
-      Transforma o lixo do prédio em <b>receita</b>. A máquina compacta 5× cada garrafa, o app gera pontos para os moradores e o relatório ESG mensal vira material de marketing do prédio. Duas peças do projeto:
-    </div>
+    <div class="eyebrow">EcoPlastic</div>
+    <h1>EcoPlastic</h1>
 
-    <div class="grid">
-      <a class="card" href="./ecoplastic.html">
-        <div class="ico">📑</div>
-        <h3>Apresentação</h3>
-        <p>Modelo de negócio, BOM da máquina e renderização 3D interativa do compactador.</p>
-        <span class="pill">Pitch + viabilidade</span>
+    <p class="lead">
+      Compactador inteligente de PET para condomínios — receita, gamificação e ESG num único produto.
+    </p>
+    <p class="lead dim">
+      Entre como síndico para gerenciar o prédio ou abra o app do morador para acumular pontos.
+    </p>
+
+    <div class="cta-stack">
+      <a class="btn primary" href="./prototipo/?p=sindico">Entrar como síndico</a>
+      <a class="btn secondary" href="./prototipo/?p=morador">App do morador</a>
+      <a class="link-tertiary" href="./ecoplastic.html">
+        Conheça o equipamento <span class="arrow">→</span>
       </a>
-      <a class="card proto" href="./prototipo/">
-        <div class="ico">⚡</div>
-        <h3>Protótipo navegável</h3>
-        <p>SPA funcional: painel do síndico, app do morador, solicitar coletas, simular depósitos, PDF do ESG, resgate de recompensas — tudo persistido.</p>
-        <span class="pill">Demo end-to-end</span>
-      </a>
     </div>
 
-    <footer>EcoPlastic · protótipo de pesquisa · 2026</footer>
+    <footer>EcoPlastic · 2026</footer>
   </div>
 </body>
 </html>

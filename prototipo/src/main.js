@@ -1,4 +1,4 @@
-import { init, getState } from './core/store.js';
+import { init, getState, patch } from './core/store.js';
 import { start, go } from './core/router.js';
 import { runCleanups } from './core/lifecycle.js';
 import { renderLogin } from './views/login.js';
@@ -37,6 +37,22 @@ function route(r) {
 
 function boot() {
   init();
+
+  // Quick-entry deep links: /prototipo/?p=sindico  or  /prototipo/?p=morador
+  // Skip the login screen and route directly into the persona's default view.
+  const params = new URLSearchParams(location.search);
+  const quick = params.get('p');
+  if (quick === 'sindico' || quick === 'morador') {
+    patch('persona', quick);
+    if (quick === 'morador') {
+      const st = getState();
+      const julia = st.moradores.find(m => m.nome.startsWith('Julia')) || st.moradores[0];
+      patch('currentMoradorId', julia.id);
+    }
+    const target = quick === 'sindico' ? '#/admin/dashboard' : '#/morador/inicio';
+    history.replaceState(null, '', location.pathname + target);
+  }
+
   const s = getState();
   if (!s.persona && (location.hash === '' || location.hash === '#/')) {
     history.replaceState(null, '', '#/login');
