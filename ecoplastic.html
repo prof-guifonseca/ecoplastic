@@ -196,7 +196,8 @@
 
     <h3>Diferenciais entrepreneuriais</h3>
     <div class="legend">
-      <div class="item">⚙ Compactador integrado: 5× mais densidade</div>
+      <div class="item">⚙ Prensa horizontal no topo + tanque amplo embaixo (5× volume)</div>
+      <div class="item">🚪 Portinhola lateral para o staff retirar PET prensado sem abrir o gabinete</div>
       <div class="item">🎯 App de pontos pro morador (mudança comportamental)</div>
       <div class="item">📊 Relatório ESG mensal pro síndico (marketing imobiliário)</div>
       <div class="item">💸 Revenue share da venda do PET (70/30)</div>
@@ -275,8 +276,8 @@
     {key:'cabinet',   cat:'structural', name:'MDF 15mm pintado (gabinete)',      qty:1, unit:180, note:'corpo principal'},
     {key:'acrylic',   cat:'structural', name:'Acrílico cristal 4mm (janelas)',   qty:1, unit:90,  note:'visualizar compactação'},
     {key:'castors',   cat:'structural', name:'Rodízios industriais com freio (4)', qty:4, unit:18, note:'mobilidade'},
-    {key:'lock',      cat:'structural', name:'Fechadura tubular (acesso staff)', qty:1, unit:35,  note:'segurança'},
-    {key:'hinges',    cat:'structural', name:'Dobradiças (porta frontal)',       qty:3, unit:8,   note:'porta de coleta'},
+    {key:'lock',      cat:'structural', name:'Fechadura tubular da portinhola',  qty:1, unit:35,  note:'segurança · só staff'},
+    {key:'hinges',    cat:'structural', name:'Dobradiças (portinhola lateral)',  qty:3, unit:8,   note:'saída de PET prensados'},
     {key:'graphics',  cat:'structural', name:'Adesivagem + branding',            qty:1, unit:80,  note:'identidade visual'},
     {key:'screws',    cat:'structural', name:'Parafusos + cantoneiras + porcas', qty:1, unit:40,  note:'montagem'}
   ];
@@ -471,12 +472,16 @@
   const Hc = 65;   // altura total (slot na altura da cintura)
   const baseY = 4; // chão acima dos rodízios
 
-  /* Subdivisões internas:
-     Y baseY..baseY+18  : tanque de estoque (full width)
-     Y baseY+18..baseY+Hc : compartimento superior
-       X -Wc/2..+Wc/2-30 : câmara de compactação (esquerda + centro)
-       X +Wc/2-30..+Wc/2 : painel de UI (display + leitor QR + slot)
-     Slot de inserção: no topo da cabine, sobre a câmara */
+  /* Subdivisões internas (layout horizontal — prensa NO TOPO, tanque GRANDE em baixo):
+     Coluna esquerda+centro (X -Wc/2..+15, largura 60):
+       Y baseY..baseY+40 : TANQUE de estoque (tall) — bottles caem aqui via flap
+       Y baseY+40..baseY+56 : CÂMARA DE COMPACTAÇÃO (curta, perto do slot)
+       Y baseY+56..baseY+Hc : header verde
+     Coluna direita (X +15..+Wc/2, largura 30):
+       Y baseY..baseY+56 : painel UI full-height (display + QR + eletrônica)
+       Y baseY+56..baseY+Hc : header verde (mesma faixa)
+     Slot de inserção: no topo da cabine, sobre a câmara (X = -10).
+     Portinhola lateral: no painel esquerdo, sobre o tanque (acesso operador). */
 
   /* ============== RODÍZIOS ============== */
   function buildCastors(){
@@ -511,11 +516,11 @@
   function buildCabinet(){
     const g = nm(new THREE.Group(), 'cabinet');
     const t = 0.8; // espessura parede
-    const tankH    = 18;            // altura do compartimento do tanque
-    const upperH   = Hc - tankH - 9;// altura do compartimento superior (compactador + UI)
     const headerH  = 9;             // altura da faixa header verde
-    const tankTopY = baseY + tankH; // Y do "teto" do tanque (= chão da câmara)
-    const headerY  = baseY + tankH + upperH; // Y do começo do header
+    const upperH   = 16;            // câmara de compactação (curta, no topo)
+    const tankH    = Hc - upperH - headerH;  // tanque ocupa o resto (= 40)
+    const tankTopY = baseY + tankH; // Y do "teto" do tanque (= chão da câmara) = 44
+    const headerY  = baseY + tankH + upperH; // Y do começo do header = 60
 
     /* Plinto de fundo (chão do tanque) */
     g.add(box(Wc, t, Dc, MAT.cabinetDark, 0, baseY + t/2, 0));
@@ -543,17 +548,83 @@
     tagBom(back, 'cabinet'); back.userData.label = 'Gabinete MDF 15mm pintado';
     g.add(back);
 
-    /* PAINEIS LATERAIS opacos (esquerdo e direito) */
-    const left = box(t, Hc - 2*t, Dc - 2*t, MAT.cabinetWhite, -Wc/2 + t/2, baseY + Hc/2, 0);
-    tagBom(left, 'cabinet'); left.userData.label = 'Painel lateral esquerdo';
-    g.add(left);
+    /* PAINEL LATERAL DIREITO (opaco, sólido) */
     const right = box(t, Hc - 2*t, Dc - 2*t, MAT.cabinetWhite, Wc/2 - t/2, baseY + Hc/2, 0);
     tagBom(right, 'cabinet'); right.userData.label = 'Painel lateral direito';
     g.add(right);
 
+    /* PAINEL LATERAL ESQUERDO — com PORTINHOLA de acesso ao tanque.
+       O painel é dividido em 4 tiras (acima/abaixo/frente/trás da abertura) e
+       a porta é uma peça separada com puxador e dobradiças. */
+    const doorH = 22;             // altura da porta
+    const doorD = 26;             // largura da porta (eixo Z)
+    const doorY = baseY + 8 + doorH/2;  // centro Y = 23 (meio do tanque)
+    const leftX = -Wc/2 + t/2;
+    const panelInnerH = Hc - 2*t;
+    const panelInnerD = Dc - 2*t;
+    /* Tira ACIMA da porta */
+    const stripAboveH = (baseY + Hc - t) - (doorY + doorH/2);
+    g.add(box(t, stripAboveH, panelInnerD, MAT.cabinetWhite,
+              leftX, (doorY + doorH/2) + stripAboveH/2, 0));
+    /* Tira ABAIXO da porta */
+    const stripBelowH = (doorY - doorH/2) - (baseY + t);
+    g.add(box(t, stripBelowH, panelInnerD, MAT.cabinetWhite,
+              leftX, (baseY + t) + stripBelowH/2, 0));
+    /* Tira FRENTE da porta (Z > doorD/2) */
+    const stripFrontD = (Dc/2 - t) - doorD/2;
+    g.add(box(t, doorH, stripFrontD, MAT.cabinetWhite,
+              leftX, doorY, doorD/2 + stripFrontD/2));
+    /* Tira TRÁS da porta (Z < -doorD/2) */
+    g.add(box(t, doorH, stripFrontD, MAT.cabinetWhite,
+              leftX, doorY, -doorD/2 - stripFrontD/2));
+
+    /* Porta (painel ligeiramente saliente para fora, dando relevo) */
+    const door = box(t * 0.7, doorH - 1.2, doorD - 1.2, MAT.cabinetWhite,
+                    leftX - 0.25, doorY, 0);
+    tagBom(door, 'cabinet'); door.userData.label = 'Portinhola lateral — saída de garrafas amassadas';
+    g.add(door);
+    /* Moldura preta interna do recorte (cria sombra) */
+    g.add(box(t * 0.5, doorH - 0.4, 0.4, MAT.cabinetDark, leftX, doorY + doorH/2 - 0.2, 0));
+    g.add(box(t * 0.5, doorH - 0.4, 0.4, MAT.cabinetDark, leftX, doorY - doorH/2 + 0.2, 0));
+    g.add(box(t * 0.5, 0.4, doorD - 0.4, MAT.cabinetDark, leftX, doorY, doorD/2 - 0.2));
+    g.add(box(t * 0.5, 0.4, doorD - 0.4, MAT.cabinetDark, leftX, doorY, -doorD/2 + 0.2));
+    /* Puxador horizontal na frente da porta */
+    const handle = box(0.6, 0.6, 5, MAT.metalSilver, leftX - 1.2, doorY, doorD/2 - 6);
+    tagBom(handle, 'cabinet'); handle.userData.label = 'Puxador da portinhola';
+    g.add(handle);
+    /* Apoios do puxador */
+    g.add(box(0.6, 1.5, 0.6, MAT.metalSilver, leftX - 1.2, doorY, doorD/2 - 8.5));
+    g.add(box(0.6, 1.5, 0.6, MAT.metalSilver, leftX - 1.2, doorY, doorD/2 - 3.5));
+    /* Dobradiças (back side) */
+    const hingeTop = cyl(0.5, 0.5, 1.6, 12, MAT.metalSilver);
+    hingeTop.rotation.z = Math.PI/2;
+    hingeTop.position.set(leftX - 0.3, doorY + doorH/2 - 2, -doorD/2 + 1);
+    tagBom(hingeTop, 'cabinet'); hingeTop.userData.label = 'Dobradiça superior';
+    g.add(hingeTop);
+    const hingeBot = cyl(0.5, 0.5, 1.6, 12, MAT.metalSilver);
+    hingeBot.rotation.z = Math.PI/2;
+    hingeBot.position.set(leftX - 0.3, doorY - doorH/2 + 2, -doorD/2 + 1);
+    tagBom(hingeBot, 'cabinet'); hingeBot.userData.label = 'Dobradiça inferior';
+    g.add(hingeBot);
+    /* Etiqueta "PET prensados" na porta — canvas texture */
+    const lblCanvas = document.createElement('canvas');
+    lblCanvas.width = 256; lblCanvas.height = 96;
+    const lcx = lblCanvas.getContext('2d');
+    lcx.fillStyle = '#f5f6f7'; lcx.fillRect(0,0,256,96);
+    lcx.fillStyle = '#2ecc71'; lcx.font = 'bold 22px sans-serif';
+    lcx.fillText('♻ PET PRENSADOS', 18, 38);
+    lcx.fillStyle = '#062012'; lcx.font = '13px sans-serif';
+    lcx.fillText('Abrir somente com EPI', 18, 60);
+    lcx.fillText('antes da coleta da cooperativa', 18, 78);
+    const lblTex = new THREE.CanvasTexture(lblCanvas); lblTex.encoding = THREE.sRGBEncoding;
+    const lblMat = new THREE.MeshStandardMaterial({map: lblTex, metalness: 0, roughness: 0.7});
+    const lblPlane = new THREE.Mesh(new THREE.PlaneGeometry(doorD - 4, 8), lblMat);
+    lblPlane.rotation.y = -Math.PI/2;
+    lblPlane.position.set(leftX - 0.65, doorY + doorH/2 - 6, 0);
+    g.add(lblPlane);
+
     /* CHÃO INTERNO da câmara (separa tanque do compartimento de cima)
-       — só na zona do compactador (esquerda + centro). Tem um buraco com flap basculante
-       no centro pro crushed cair no tanque. */
+       — só na zona do compactador (esquerda + centro), pois a coluna UI agora é full-height. */
     /* Painel divisor: à esquerda do flap */
     const divHoleW = 22, divHoleX = -10; // posição do "buraco" central (alinhado ao flap)
     const divLeftW = (divHoleX - divHoleW/2) - (-Wc/2 + t);
@@ -564,31 +635,33 @@
     const divRightW = compactorRightX - (divHoleX + divHoleW/2);
     g.add(box(divRightW, t, Dc - 2*t, MAT.cabinetDark,
              (divHoleX + divHoleW/2 + compactorRightX)/2, tankTopY + t/2, 0));
-    /* Divisor sob o painel UI (X de +15 a +45): chão sólido (não cai garrafa pelo lado da UI) */
-    g.add(box(Wc/2 - compactorRightX - t, t, Dc - 2*t, MAT.cabinetDark,
-             (compactorRightX + Wc/2 - t)/2, tankTopY + t/2, 0));
 
-    /* PAREDE VERTICAL interna que separa câmara do painel UI (X = compactorRightX) */
-    const partition = box(t, upperH - t, Dc - 2*t, MAT.cabinetWhite,
-                         compactorRightX, tankTopY + (upperH - t)/2, 0);
-    tagBom(partition, 'cabinet'); partition.userData.label = 'Divisória interna câmara/UI';
+    /* PAREDE VERTICAL interna que separa tanque/câmara (esquerda) da coluna UI (direita).
+       Agora full-height — vai do plinto até o header pra acomodar a eletrônica vertical. */
+    const partition = box(t, Hc - 2*t, Dc - 2*t, MAT.cabinetWhite,
+                         compactorRightX, baseY + Hc/2, 0);
+    tagBom(partition, 'cabinet'); partition.userData.label = 'Divisória interna tanque/câmara/UI';
     g.add(partition);
 
-    /* FRENTE — composta de 3 faixas verticais e 2 zonas horizontais:
-       Faixa inferior (tanque): janela acrílica grande (todo Wc - moldura)
-       Faixa superior esquerda+centro (compactador): janela acrílica menor (vê o pistão)
-       Faixa superior direita (UI): opaca, recebe display+QR */
+    /* FRENTE — agora a coluna UI (X +15..+45) é full-height (opaca). A coluna esquerda+centro
+       (X -Wc/2..+15) é dividida em janela do tanque (em baixo, grande) e janela da câmara
+       de compactação (em cima, pequena). */
 
-    /* Janela frontal do TANQUE */
-    const tankWinW = Wc - 8;
-    const tankWin = box(tankWinW, tankH - 4, t*0.5, MAT.acrylic, 0, baseY + 2 + (tankH-4)/2, -Dc/2 + t/2);
+    /* Janela frontal do TANQUE (limitada à coluna esquerda+centro, sem cobrir a UI) */
+    const tankWinXLeft  = -Wc/2 + 4;
+    const tankWinXRight = compactorRightX - 2;
+    const tankWinW      = tankWinXRight - tankWinXLeft;
+    const tankWinXC     = (tankWinXLeft + tankWinXRight) / 2;
+    const tankWinYC     = baseY + 2 + (tankH-4)/2;
+    const tankWin = box(tankWinW, tankH - 4, t*0.5, MAT.acrylic, tankWinXC, tankWinYC, -Dc/2 + t/2);
     tagBom(tankWin, 'acrylic'); tankWin.userData.label = 'Janela acrílica do tanque (estoque visível)';
     g.add(tankWin);
-    /* Moldura tanque (laterais + topo da janela) */
-    g.add(box((Wc - tankWinW)/2, tankH - 4, t, MAT.cabinetWhite, -(Wc - tankWinW)/4 - tankWinW/2, baseY + 2 + (tankH-4)/2, -Dc/2 + t/2));
-    g.add(box((Wc - tankWinW)/2, tankH - 4, t, MAT.cabinetWhite,  (Wc - tankWinW)/4 + tankWinW/2, baseY + 2 + (tankH-4)/2, -Dc/2 + t/2));
-    /* Tira separadora horizontal entre tanque e parte superior */
-    g.add(box(Wc, 2, t, MAT.cabinetWhite, 0, baseY + tankH, -Dc/2 + t/2));
+    /* Moldura tanque (esquerda + tira fina à direita junto à divisória) */
+    g.add(box(4, tankH - 4, t, MAT.cabinetWhite, -Wc/2 + 2, tankWinYC, -Dc/2 + t/2));
+    g.add(box(2, tankH - 4, t, MAT.cabinetWhite, compactorRightX - 1, tankWinYC, -Dc/2 + t/2));
+    /* Tira separadora horizontal entre tanque e câmara — só na coluna esquerda+centro */
+    const sepW = compactorRightX - (-Wc/2);
+    g.add(box(sepW, 2, t, MAT.cabinetWhite, (-Wc/2 + compactorRightX)/2, baseY + tankH, -Dc/2 + t/2));
 
     /* Janela frontal da CÂMARA DE COMPACTAÇÃO (zona esquerda+centro)
        upperH já exclui o header — então sobra um respiro de 2cm em cima
@@ -607,10 +680,12 @@
     g.add(box(compFrontW + 4, 2, t, MAT.cabinetWhite,
              compFrontCenterX, tankTopY + 2 + compFrontH + 1, -Dc/2 + t/2));
 
-    /* Painel frontal da zona UI (opaco branco) — toda a faixa upperH (sem header) */
-    const uiFrontW = Wc/2 - compactorRightX;
-    const uiFront = box(uiFrontW, upperH, t, MAT.cabinetWhite,
-                       (compactorRightX + Wc/2)/2, tankTopY + upperH/2, -Dc/2 + t/2);
+    /* Painel frontal da zona UI (opaco branco) — agora FULL-HEIGHT (Y baseY..headerY) */
+    const uiFrontW  = Wc/2 - compactorRightX;
+    const uiFrontH  = headerY - baseY;
+    const uiFrontCY = baseY + uiFrontH/2;
+    const uiFront   = box(uiFrontW, uiFrontH, t, MAT.cabinetWhite,
+                       (compactorRightX + Wc/2)/2, uiFrontCY, -Dc/2 + t/2);
     tagBom(uiFront, 'cabinet'); uiFront.userData.label = 'Painel frontal UI (porta de manutenção)';
     g.add(uiFront);
 
@@ -1011,22 +1086,25 @@
     g.userData.tankItems = tankItems;
     g.userData.yBottom  = yBottom;
     g.userData.yTop     = yTop;
-    /* Limites X/Z de pouso (deixa folga pras paredes) */
+    /* Limites X/Z de pouso (tanque só ocupa coluna esquerda+centro até a divisória) */
     g.userData.xMin = -Wc/2 + 4;
-    g.userData.xMax =  Wc/2 - 4;
+    g.userData.xMax =  cabRef.userData.compactorRightX - 2;
     g.userData.zMin = -Dc/2 + 4;
     g.userData.zMax =  Dc/2 - 4;
     return g;
   }
 
-  /* Cria N garrafas amassadas pré-acumuladas no tanque (dão volume inicial visível) */
+  /* Cria N garrafas amassadas pré-acumuladas no tanque (dão volume inicial visível).
+     Com o novo tanque maior, espalhamos as garrafas verticalmente em até ~10cm para
+     transmitir a sensação de volume preenchido. */
   function seedTank(tank, n){
     for(let i=0; i<n; i++){
       const b = buildBottle();
       applyCrush(b, 0.18 + Math.random()*0.08);
       const x = tank.userData.xMin + Math.random()*(tank.userData.xMax - tank.userData.xMin);
       const z = tank.userData.zMin + Math.random()*(tank.userData.zMax - tank.userData.zMin);
-      const y = tank.userData.yBottom + 1 + Math.random()*2.5;
+      const yRange = Math.min(10, tank.userData.yTop - tank.userData.yBottom - 2);
+      const y = tank.userData.yBottom + 1 + Math.random() * yRange;
       b.position.set(x, y, z);
       /* deita a garrafa horizontal — gira em torno de Z (fica no eixo X) */
       b.rotation.z = Math.PI/2;
@@ -1066,7 +1144,10 @@
     us.add(box(4.5, 2.0, 0.6, MAT.pcbGreen));
     const eye1 = cyl(0.85, 0.85, 0.6, 18, MAT.metalSilver); eye1.position.set(-1.4, 0, 0.5); eye1.rotation.x = Math.PI/2; us.add(eye1);
     const eye2 = cyl(0.85, 0.85, 0.6, 18, MAT.metalSilver); eye2.position.set( 1.4, 0, 0.5); eye2.rotation.x = Math.PI/2; us.add(eye2);
-    us.position.set((cabRef.userData.compactorRightX + Wc/2)/2, chamberMidY + 8, -Dc/2 - 0.3);
+    /* Ultrassom: na frente do painel UI, abaixo do display (display Y ~ headerY-9 = 51).
+       Posição fixa na altura média do painel UI, evitando colidir com header/prensa. */
+    const usY = cabRef.userData.headerY - 22;  // ~38, no terço inferior do painel UI
+    us.position.set((cabRef.userData.compactorRightX + Wc/2)/2, usY, -Dc/2 - 0.3);
     us.traverse(o=>{ if(o.isMesh){ tagBom(o, 'ultraso'); o.userData.label='HC-SR04 (presença de morador)'; }});
     g.add(us);
 
@@ -1084,11 +1165,12 @@
   /* ============== ESP32 + RELÊ + FONTE (rack atrás do painel UI direito) ============== */
   function buildElectronics(cabRef){
     const g = nm(new THREE.Group(), 'electronics');
-    /* Placa ESP32 + relê + fonte montados num "rack" atrás do painel UI direito */
+    /* Placa ESP32 + relê + fonte montados num "rack" atrás do painel UI direito.
+       A coluna UI agora é full-height — o rack fica no terço inferior, livre da prensa. */
     const compactorRightX = cabRef.userData.compactorRightX;
     const rackX = (compactorRightX + Wc/2)/2;     // ~+30
     const rackZ = Dc/2 - 6;                       // perto da parede traseira
-    const baseRackY = baseY + 22;                 // logo acima do tanque
+    const baseRackY = baseY + 4;                  // próximo do plinto (Y ~8..28)
 
     /* ESP32 NodeMCU */
     const esp32 = box(5, 0.4, 2.8, MAT.pcbGreen, rackX, baseRackY + 18, rackZ);
@@ -1186,8 +1268,8 @@
   const electronics= buildElectronics(cabinet);   bin.add(electronics);
   scene.add(bin);
 
-  /* Pré-popula o tanque com algumas garrafas amassadas pra dar ideia de uso real */
-  seedTank(tank, 18);
+  /* Pré-popula o tanque com garrafas amassadas pra dar ideia de uso real (tanque maior agora) */
+  seedTank(tank, 28);
 
   function setLabel(obj, label){ obj.userData = obj.userData || {}; obj.userData.label = label }
   setLabel(castors, 'Rodízios industriais');
@@ -1337,7 +1419,10 @@
       3 compact         : pistão HORIZONTAL avança, garrafa amassa
       4 drop            : pistão recua, flap abre, garrafa cai no tanque
       5 done            : display agradece, contadores sobem, garrafa entra no acúmulo */
-  const T = { greet:0.6, fall:1.0, analyze:1.8, compact:1.8, drop:1.0, done:1.5 };
+  /* Com a prensa agora no topo e o tanque alto, a fase 'drop' percorre ~40 cm
+     (antes ~20 cm) — aumentamos T.drop para 1.3 s para ficar visível com o
+     gravity-fake k². T.fall reduz pois a queda inicial é menor (slot → flap). */
+  const T = { greet:0.6, fall:0.85, analyze:1.8, compact:1.8, drop:1.3, done:1.5 };
 
   /* Reseta TODO o estado físico/visual da animação para o ponto inicial.
      Antes, stopCycle só removia a garrafa e abaixava o pistão em Y; agora reseta
@@ -1513,7 +1598,9 @@
     t -= T.compact;
     compactor.userData.piston.position.x = pistonEndX;
 
-    /* PHASE 4 — pistão recua, flap abre pra baixo, garrafa cai no tanque */
+    /* PHASE 4 — pistão recua, flap abre pra baixo, garrafa cai no tanque (queda longa).
+       Com a prensa no topo, a garrafa percorre ~40 cm até o fundo. Para parecer
+       caindo "dentro da pilha" de garrafas amassadas, o endY varia entre 6 e 12. */
     if(t < T.drop){
       const k = smooth(t / T.drop);
       /* Pistão volta pro home */
@@ -1522,7 +1609,7 @@
       compactor.userData.flap.rotation.x = -k * Math.PI * 0.45;
       /* Garrafa cai pro tanque (gravidade fake k²) */
       const startY = restY - 0.6;
-      const endY   = baseY + 1.5 + Math.random() * 1.5;
+      const endY   = baseY + 2 + Math.random() * 6;
       anim.bottle.position.y = lerp(startY, endY, k * k);
       anim.bottle.position.z = lerp(0, anim.bottleDropZ, k);
       anim.bottle.rotation.y += dt * 3.0;
