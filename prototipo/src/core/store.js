@@ -1,7 +1,7 @@
 import { emit } from './bus.js';
 import { buildSeed, SCHEMA_VERSION } from '../data/seed.js';
 
-const KEY = 'eco:v1';
+const KEY = 'ecotech:v1';
 let state = null;
 let saveTimer = null;
 

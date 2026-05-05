@@ -63,7 +63,7 @@ export function doughnutSplit(canvas, condoPct = 0.7) {
   canvas._chart = new window.Chart(canvas, {
     type: 'doughnut',
     data: {
-      labels: ['Condomínio', 'EcoPlastic'],
+      labels: ['Condomínio', 'EcoTech'],
       datasets: [{
         data: [Math.round(condoPct * 100), Math.round((1 - condoPct) * 100)],
         backgroundColor: [dark.brand, dark.accent],

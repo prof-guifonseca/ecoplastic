@@ -28,7 +28,7 @@ export async function exportPdf() {
   doc.rect(0, 0, W, 70, 'F');
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(20);
-  doc.text('Relatório ESG — EcoPlastic', 40, 32);
+  doc.text('Relatório ESG — EcoTech', 40, 32);
   doc.setFontSize(11);
   doc.text(cond.nome, 40, 52);
 
@@ -102,7 +102,7 @@ export async function exportPdf() {
   // Footer
   doc.setFontSize(9);
   doc.setTextColor(150, 150, 150);
-  doc.text('Gerado por EcoPlastic · plataforma Recycle-as-a-Service para condomínios', 40, 820);
+  doc.text('Gerado por EcoTech · plataforma Recycle-as-a-Service para condomínios', 40, 820);
 
   const fname = `ESG_${cond.nome.replace(/\W+/g, '_')}_${new Date().toISOString().slice(0, 7)}.pdf`;
   doc.save(fname);
@@ -111,5 +111,5 @@ export async function exportPdf() {
 export function shareText() {
   const m = metricas();
   const c = getState().condominio;
-  return `🌱 ${c.nome} já reciclou ${dec(m.kg)} kg de PET — ${num(m.garrafas)} garrafas e ${m.co2Toneladas} t de CO₂ evitadas. EcoPlastic em ação!`;
+  return `🌱 ${c.nome} já reciclou ${dec(m.kg)} kg de PET — ${num(m.garrafas)} garrafas e ${m.co2Toneladas} t de CO₂ evitadas. EcoTech em ação!`;
 }

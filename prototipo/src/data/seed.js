@@ -159,7 +159,7 @@ export function buildSeed() {
       { id: 'r_desc_10', titulo: 'R$ 10 desconto no boleto', descricao: 'Aplicado no próximo condomínio', ico: '💰', custoPontos: 2000, parceiro: 'Condomínio', estoque: 50 },
       { id: 'r_desc_25', titulo: 'R$ 25 desconto no boleto', descricao: 'Aplicado no próximo condomínio', ico: '💰', custoPontos: 5000, parceiro: 'Condomínio', estoque: 30 },
       { id: 'r_arvore', titulo: 'Adoção de 1 árvore', descricao: 'Plantio em parceria SOS Mata Atlântica', ico: '🌳', custoPontos: 3500, parceiro: 'SOS Mata Atlântica', estoque: 20 },
-      { id: 'r_sacola', titulo: 'Sacola eco EcoPlastic', descricao: 'Entrega na portaria', ico: '🛍️', custoPontos: 1200, parceiro: 'EcoPlastic', estoque: 40 },
+      { id: 'r_sacola', titulo: 'Sacola eco EcoTech', descricao: 'Entrega na portaria', ico: '🛍️', custoPontos: 1200, parceiro: 'EcoTech', estoque: 40 },
       { id: 'r_cinema', titulo: '2 ingressos Cinemark', descricao: 'Voucher digital', ico: '🎬', custoPontos: 4500, parceiro: 'Cinemark', estoque: 15 },
       { id: 'r_ifood', titulo: 'R$ 30 iFood', descricao: 'Voucher digital', ico: '🍔', custoPontos: 6000, parceiro: 'iFood', estoque: 10 }
     ]

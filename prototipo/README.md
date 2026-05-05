@@ -1,6 +1,6 @@
-# EcoPlastic — Protótipo Funcional
+# EcoTech — Protótipo Funcional
 
-Protótipo navegável da plataforma **EcoPlastic** (Recycle-as-a-Service para condomínios). SPA vanilla com estado persistido, fluxos completos, gráficos Chart.js, QR Code real e PDF do ESG via jsPDF.
+Protótipo navegável da plataforma **EcoTech** (Recycle-as-a-Service para condomínios). SPA vanilla com estado persistido, fluxos completos, gráficos Chart.js, QR Code real e PDF do ESG via jsPDF.
 
 ## Como abrir
 
@@ -42,7 +42,7 @@ Depois abra <http://localhost:8080> (ou a porta sugerida).
 - HTML5 / CSS3 / JavaScript modular (ES Modules)
 - Sem build, sem npm install
 - CDN: [Chart.js](https://www.chartjs.org/), [qrcode.js](https://github.com/soldair/node-qrcode), [jsPDF](https://github.com/parallax/jsPDF)
-- Estado em `localStorage` (chave `eco:v1`, schema versionado)
+- Estado em `localStorage` (chave `ecotech:v1`, schema versionado)
 
 ## Estrutura
 
@@ -77,7 +77,7 @@ prototipo/
 
 ## Reset manual
 
-DevTools → Application → Local Storage → apagar `eco:v1` → recarregar.
+DevTools → Application → Local Storage → apagar `ecotech:v1` → recarregar.
 
 ## Fora de escopo (intencional)
 

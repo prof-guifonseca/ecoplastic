@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EcoPlastic — Recycle-as-a-Service para Condomínios</title>
+  <title>EcoTech — Recycle-as-a-Service para Condomínios</title>
   <style>
     /* =========================================================
-       ECOPLASTIC — Compactador Inteligente de PET para Condomínios
+       ECOTECH — Compactador Inteligente de PET para Condomínios
        Produto físico + SaaS + revenue share
        Diferencial: compactação 5× + app de pontos + ESG report
        ========================================================= */
@@ -158,7 +158,7 @@
   <a href="./" style="position:fixed;top:14px;left:14px;z-index:50;background:rgba(16,26,37,.85);backdrop-filter:blur(8px);color:#cfd6df;padding:8px 14px;border-radius:99px;border:1px solid #1d3349;text-decoration:none;font-size:12px;font-weight:600">← voltar à entrada</a>
 
   <div class="header">
-    <h1><span class="dot"></span>EcoPlastic — Recycle-as-a-Service</h1>
+    <h1><span class="dot"></span>EcoTech — Recycle-as-a-Service</h1>
     <div class="sub">Compactador inteligente de PET para condomínios · produto + SaaS + revenue share</div>
     <div class="pitch">
       <b>Por que condomínios pagam por isso:</b> a máquina <b>compacta 5×</b> cada garrafa, então o caminhão da cooperativa vem 5× menos. Menos custo de logística, mais valor por kg vendido. O <b>app gera pontos</b> aos moradores e o <b>relatório ESG mensal</b> vira material de marketing do prédio. Layout <b>horizontal</b> (cabe em hall, garagem ou área de serviço; slot na altura da cintura).
@@ -250,7 +250,7 @@
 
   <script>
   /* =========================================================
-     ECOPLASTIC — Cabine horizontal para condomínios
+     ECOTECH — Cabine horizontal para condomínios
      (layout horizontal: cabe melhor em hall/garagem/área de serviço,
       slot na altura da cintura, pistão horizontal)
      ========================================================= */
@@ -288,7 +288,7 @@
     {
       title:'1. Hardware (one-time)',
       headline:'R$ 2.500 / unidade',
-      detail:'Venda da máquina ao condomínio. Margem de ~50% sobre o BOM. Alternativa: leasing de R$ 0 entrada + 24× R$ 199, com a máquina como propriedade da EcoPlastic.'
+      detail:'Venda da máquina ao condomínio. Margem de ~50% sobre o BOM. Alternativa: leasing de R$ 0 entrada + 24× R$ 199, com a máquina como propriedade da EcoTech.'
     },
     {
       title:'2. SaaS mensal (recorrente)',
@@ -298,7 +298,7 @@
     {
       title:'3. Revenue share da venda',
       headline:'30% da venda do PET',
-      detail:'Quando a EcoPlastic intermedia a coleta junto à cooperativa parceira, fica com 30% do valor pago pelo plástico (preço médio: R$ 2,50/kg). 70% volta como crédito ao condomínio (e os moradores podem trocar pontos por desconto no boleto).'
+      detail:'Quando a EcoTech intermedia a coleta junto à cooperativa parceira, fica com 30% do valor pago pelo plástico (preço médio: R$ 2,50/kg). 70% volta como crédito ao condomínio (e os moradores podem trocar pontos por desconto no boleto).'
     }
   ];
 
@@ -504,7 +504,7 @@
   }
 
   /* ============== GABINETE — HORIZONTAL ============== */
-  /* Cabinet branco com header verde EcoPlastic e acrílico transparente
+  /* Cabinet branco com header verde EcoTech e acrílico transparente
      na frente (vê-se tanque inferior + janela do compactador no centro).
      Layout horizontal:
        Y 4..22   : tanque de estoque (full width, com janela acrílica frontal)
@@ -691,15 +691,15 @@
 
     /* HEADER frontal (vinil verde, full width) */
     const topFront = box(Wc, headerH, t, MAT.cabinetGreen, 0, headerY + headerH/2, -Dc/2 + t/2);
-    tagBom(topFront, 'cabinet'); topFront.userData.label = 'Header EcoPlastic (vinil verde)';
+    tagBom(topFront, 'cabinet'); topFront.userData.label = 'Header EcoTech (vinil verde)';
     g.add(topFront);
 
-    /* Logo "EcoPlastic" (canvas texture) */
+    /* Logo "EcoTech" (canvas texture) */
     const logoCanvas = document.createElement('canvas'); logoCanvas.width=1024; logoCanvas.height=128;
     const lc = logoCanvas.getContext('2d');
     lc.fillStyle='#2ecc71'; lc.fillRect(0,0,1024,128);
     lc.fillStyle='#062012'; lc.font='bold 60px sans-serif';
-    lc.fillText('EcoPlastic', 40, 80);
+    lc.fillText('EcoTech', 40, 80);
     lc.fillStyle='#062012'; lc.font='16px sans-serif';
     lc.fillText('Recycle-as-a-Service · Compactador Inteligente Horizontal', 40, 108);
     /* leaf */
@@ -835,7 +835,7 @@
         // Header
         cx.fillStyle = '#2ecc71'; cx.fillRect(0,0,512,52);
         cx.fillStyle = '#062012'; cx.font = 'bold 24px sans-serif';
-        cx.fillText('EcoPlastic', 18, 34);
+        cx.fillText('EcoTech', 18, 34);
         cx.font = '13px sans-serif';
         cx.fillText('Compactador Inteligente · Cond. Edif. Verde', 200, 32);
         // Counters dia
@@ -929,7 +929,7 @@
         cx.fillText(s.todayBottles + ' garrafas · ' + s.todayKg.toFixed(2) + ' kg', 100, 268);
       }
     }
-    draw({mode:'idle', todayBottles:0, todayKg:0, monthBottles:0, co2:0, trees:0, tankPct:0, qr:'ecoplastic://loading'});
+    draw({mode:'idle', todayBottles:0, todayKg:0, monthBottles:0, co2:0, trees:0, tankPct:0, qr:'ecotech://loading'});
 
     const tex = new THREE.CanvasTexture(c); tex.encoding = THREE.sRGBEncoding;
     const mat = new THREE.MeshStandardMaterial({map:tex, emissive:0xffffff, emissiveMap:tex, emissiveIntensity:0.55, metalness:0, roughness:0.3});
@@ -1273,7 +1273,7 @@
 
   function setLabel(obj, label){ obj.userData = obj.userData || {}; obj.userData.label = label }
   setLabel(castors, 'Rodízios industriais');
-  setLabel(cabinet, 'Gabinete EcoPlastic');
+  setLabel(cabinet, 'Gabinete EcoTech');
   setLabel(inlet, 'Slot só-PET (servo-acionado)');
   setLabel(display, 'Display + leitor QR (interface morador)');
   setLabel(compactor, 'Compactador (motor + fuso + pistão)');
@@ -1385,7 +1385,7 @@
     co2: 28,
     trees: 4,
     tankPct: 0.42,
-    qr: 'ecoplastic://join/' + Math.random().toString(36).slice(2,8).toUpperCase()
+    qr: 'ecotech://join/' + Math.random().toString(36).slice(2,8).toUpperCase()
   };
   function pushDisplayState(mode, extra){
     if(!display.userData.draw) return;
@@ -1498,7 +1498,7 @@
       anim.statsApplied = false;
       anim.t = 0;
       setStatus('Pronto', 'Toque "Simular descarte" para um novo morador', '#2ecc71');
-      stats.qr = 'ecoplastic://join/' + Math.random().toString(36).slice(2,8).toUpperCase();
+      stats.qr = 'ecotech://join/' + Math.random().toString(36).slice(2,8).toUpperCase();
       pushDisplayState('idle');
       return;
     }
@@ -1657,7 +1657,7 @@
     anim.t = 0;
     setStatus('Pronto', 'Toque "Simular descarte" para um novo morador', '#2ecc71');
     /* roda o token do QR */
-    stats.qr = 'ecoplastic://join/' + Math.random().toString(36).slice(2,8).toUpperCase();
+    stats.qr = 'ecotech://join/' + Math.random().toString(36).slice(2,8).toUpperCase();
     pushDisplayState('idle');
   }
 

@@ -25,7 +25,7 @@ export function renderQr(root, morador) {
       </div>
       <div class="info">${morador.nome} · Apto ${morador.apto}</div>
       <ol>
-        <li>Aproxime-se da máquina compactadora EcoPlastic</li>
+        <li>Aproxime-se da máquina compactadora EcoTech</li>
         <li>Mostre este QR para o leitor superior</li>
         <li>Insira a garrafa PET no compartimento</li>
         <li>Pontos creditados automaticamente</li>

@@ -1,4 +1,4 @@
-# EcoPlastic
+# EcoTech
 
 > Recycle-as-a-Service para condomínios — compactador inteligente de PET + plataforma SaaS com gestão, gamificação e relatório ESG.
 
@@ -7,7 +7,7 @@
 | Arquivo / pasta | O que é |
 | --- | --- |
 | `index.html` | Entrada do site: hero medalhão + 2 CTAs primários (Síndico · Morador) + link "Conheça o equipamento" |
-| `ecoplastic.html` | Conheça o equipamento: pitch, BOM e render 3D do compactador |
+| `ecotech.html` | Conheça o equipamento: pitch, BOM e render 3D do compactador |
 | `prototipo/` | App navegável (SPA vanilla com `localStorage`, Chart.js, QR code real, PDF do ESG via jsPDF). Aceita `?p=sindico` / `?p=morador` para auto-login |
 
 ## Rodando localmente
@@ -45,7 +45,7 @@ netlify deploy --prod --dir=.
 
 - HTML5 / CSS3 / JS modular (ES Modules) — sem build, sem npm install
 - Chart.js, qrcode.js (davidshimjs) e jsPDF via CDN
-- Persistência: `localStorage` versionado (`eco:v1`)
+- Persistência: `localStorage` versionado (`ecotech:v1`)
 
 ## Licença
 
