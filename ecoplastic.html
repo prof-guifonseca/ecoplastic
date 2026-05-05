@@ -1,0 +1,1678 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoPlastic — Recycle-as-a-Service para Condomínios</title>
+  <style>
+    /* =========================================================
+       ECOPLASTIC — Compactador Inteligente de PET para Condomínios
+       Produto físico + SaaS + revenue share
+       Diferencial: compactação 5× + app de pontos + ESG report
+       ========================================================= */
+    :root{
+      --bg-0:#0a1218; --line:#1d3349; --text:#e8ecf2; --muted:#8a9aa8;
+      --brand:#2ecc71; --brand-2:#27ae60; --accent:#f39c12;
+      --plastic:#1abc9c; --warn:#ffb84a; --danger:#ff6b6b;
+      --shadow: 0 10px 30px rgba(0,0,0,.5);
+      --panelBg: linear-gradient(180deg,rgba(15,24,32,.94),rgba(15,24,32,.84));
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;height:100%;overflow:hidden;background:var(--bg-0);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+    #stage{position:fixed;inset:0}
+    #stage canvas{display:block}
+
+    .header{
+      position:fixed;top:14px;left:14px;z-index:5;
+      background:var(--panelBg); backdrop-filter: blur(10px);
+      border:1px solid var(--line); border-radius:12px;
+      padding:14px 18px; box-shadow: var(--shadow); max-width: 410px;
+    }
+    .header h1{margin:0;font-size:16px;letter-spacing:.4px;font-weight:700;display:flex;align-items:center;gap:10px}
+    .header h1 .dot{width:10px;height:10px;border-radius:50%;background:var(--brand);box-shadow:0 0 12px var(--brand)}
+    .header .sub{margin-top:3px;font-size:11.5px;color:var(--muted);letter-spacing:.2px}
+    .header .pitch{
+      margin-top:10px; padding:10px 12px;
+      background:linear-gradient(135deg,#0e2a1f,#102b25);
+      border:1px solid #1f4d3e; border-radius:8px; font-size:11.5px; line-height:1.5;
+    }
+    .header .pitch b{color:var(--brand)}
+    .header .meta{margin-top:8px;display:flex;gap:12px;font-size:10.5px;color:var(--muted)}
+    .header .meta b{color:var(--text)}
+
+    .panel{
+      position:fixed;top:14px;right:14px;z-index:5; width:280px;
+      background:var(--panelBg); backdrop-filter: blur(10px);
+      border:1px solid var(--line); border-radius:12px;
+      padding:12px; box-shadow: var(--shadow);
+      max-height: calc(100vh - 28px); overflow:auto;
+    }
+    .panel h3{font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin:14px 4px 8px;font-weight:700}
+    .panel h3:first-child{margin-top:4px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+    .btn{
+      width:100%; appearance:none; cursor:pointer;
+      background:#152130; color:var(--text);
+      border:1px solid var(--line); border-radius:8px;
+      padding:9px 10px; font-size:12px;
+      display:flex;align-items:center;justify-content:center;gap:6px;
+      transition: all .15s;
+    }
+    .btn:hover{background:#1c2c3f;border-color:#2a4661}
+    .btn:active{transform:translateY(1px)}
+    .btn.full{grid-column:span 2}
+    .btn.brand{background:linear-gradient(135deg,var(--brand-2),var(--brand));border-color:var(--brand);color:#062012;font-weight:700}
+    .btn.brand:hover{background:linear-gradient(135deg,#34d27a,#3edc83)}
+    .toggle{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:8px 10px; background:#101a25; border:1px solid var(--line);
+      border-radius:8px; font-size:12px; cursor:pointer; margin-top:6px;
+    }
+    .toggle:first-of-type{margin-top:0}
+    .toggle .sw{width:30px;height:18px;border-radius:99px;background:#243140;position:relative;transition:.2s}
+    .toggle .sw::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#8a9aa8;transition:.2s}
+    .toggle[data-on="true"] .sw{background:#1f5c47}
+    .toggle[data-on="true"] .sw::after{left:14px;background:var(--brand)}
+    .legend{font-size:11.5px;color:var(--muted);line-height:1.5;padding:6px 4px 0}
+    .legend .item{display:flex;align-items:center;gap:8px;margin-top:4px}
+
+    /* Business model + BOM panel — left bottom */
+    .bm{
+      position:fixed;left:14px;bottom:14px;z-index:5; width:360px;
+      background:var(--panelBg); backdrop-filter: blur(10px);
+      border:1px solid var(--line); border-radius:12px;
+      box-shadow: var(--shadow);
+      max-height: calc(100vh - 320px); overflow:hidden;
+      display:flex; flex-direction:column;
+    }
+    .bm .tabs{display:flex;border-bottom:1px solid var(--line)}
+    .bm .tab{
+      flex:1;padding:10px;text-align:center;cursor:pointer;font-size:11px;
+      color:var(--muted);background:transparent;border:none;border-bottom:2px solid transparent;
+      transition: color .15s, border-color .15s; text-transform:uppercase;letter-spacing:.6px;font-weight:600;
+    }
+    .bm .tab.active{color:var(--text);border-bottom-color:var(--brand)}
+    .bm .body{overflow:auto;flex:1;padding:12px}
+    .bm .body h4{margin:0 0 8px;font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted)}
+    .bm .body h4:not(:first-child){margin-top:14px}
+    .bm-row{
+      display:grid;grid-template-columns:18px 1fr 30px 64px;
+      gap:8px;padding:6px 0;font-size:11.5px;cursor:pointer;
+      border-bottom:1px solid #142028;align-items:center;
+    }
+    .bm-row:hover, .bm-row.hl{background:#0e1a26;margin:0 -12px;padding-left:12px;padding-right:12px}
+    .bm-row .ic{font-size:12px;color:var(--muted);text-align:center}
+    .bm-row .nm{color:var(--text);line-height:1.3}
+    .bm-row .nm small{display:block;color:var(--muted);font-size:10px;font-weight:400}
+    .bm-row .qt{color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+    .bm-row .pr{color:var(--text);text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+    .stream{
+      padding:10px 12px;background:#0e1a26;border:1px solid #1a2d3a;
+      border-radius:8px;margin:6px 0;
+    }
+    .stream .t{font-size:12px;color:var(--text);font-weight:600;display:flex;justify-content:space-between;align-items:center}
+    .stream .t b{color:var(--brand)}
+    .stream .d{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.4}
+
+    .bm .total{
+      padding:10px 12px;border-top:1px solid var(--line);font-size:13px;font-weight:700;
+      display:flex;justify-content:space-between;align-items:center;color:var(--brand);
+    }
+    .bm .total small{font-weight:400;color:var(--muted);font-size:10px;letter-spacing:.4px}
+
+    .status{
+      position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:5;
+      background:rgba(10,18,24,.92); backdrop-filter:blur(10px);
+      border:1px solid var(--line); border-radius:10px;
+      padding:8px 14px; font-size:11.5px; color:var(--muted);
+      display:flex; gap:14px; align-items:center;
+    }
+    .status b{color:var(--text);font-weight:600}
+    .status .led{width:8px;height:8px;border-radius:50%;background:var(--brand);box-shadow:0 0 8px var(--brand)}
+
+    #annot{
+      position:fixed;pointer-events:none;z-index:6;
+      background:#0a141c;border:1px solid var(--line);border-radius:8px;
+      padding:6px 9px;font-size:11.5px;color:var(--text);
+      box-shadow: var(--shadow);
+      transform: translate(-50%, calc(-100% - 12px));
+      opacity:0;transition:opacity .12s;white-space:nowrap;
+    }
+    #annot.show{opacity:1}
+    #annot::after{content:"";position:absolute;left:50%;bottom:-5px;transform:translateX(-50%) rotate(45deg);width:8px;height:8px;background:#0a141c;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+
+    .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#0a141c;border:1px solid var(--line);border-radius:4px;padding:1px 5px;font-size:10.5px;color:var(--text)}
+
+    @media (max-width: 1000px){
+      .header{max-width:calc(100vw - 28px)}
+      .panel,.bm{width:calc(100vw - 28px)}
+      .bm{display:none}
+    }
+  </style>
+</head>
+<body>
+  <div id="stage"></div>
+
+  <div id="err" style="position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:99;background:#3a1a1a;color:#ffd2c6;padding:10px 16px;border:1px solid #6a3a3a;border-radius:8px;display:none;max-width:80vw;font-family:ui-monospace,monospace;font-size:12px"></div>
+
+  <div class="header">
+    <h1><span class="dot"></span>EcoPlastic — Recycle-as-a-Service</h1>
+    <div class="sub">Compactador inteligente de PET para condomínios · produto + SaaS + revenue share</div>
+    <div class="pitch">
+      <b>Por que condomínios pagam por isso:</b> a máquina <b>compacta 5×</b> cada garrafa, então o caminhão da cooperativa vem 5× menos. Menos custo de logística, mais valor por kg vendido. O <b>app gera pontos</b> aos moradores e o <b>relatório ESG mensal</b> vira material de marketing do prédio. Layout <b>horizontal</b> (cabe em hall, garagem ou área de serviço; slot na altura da cintura).
+    </div>
+    <div class="meta">
+      <span><b>Largura</b> 90 cm</span>
+      <span><b>Altura</b> 65 cm</span>
+      <span><b>Capacidade</b> ~250 garrafas amassadas</span>
+    </div>
+    <div class="meta" style="margin-top:14px">
+      <a href="./ecoplastic-app.html" style="background:#101a25;color:#cfd6df;padding:9px 16px;border-radius:99px;border:1px solid #1d3349;text-decoration:none;font-weight:600;font-size:12.5px">📱 Ver mockup do app</a>
+      <a href="./prototipo/" style="background:linear-gradient(180deg,#2ecc71,#27ae60);color:#06150c;padding:9px 16px;border-radius:99px;border:0;text-decoration:none;font-weight:700;font-size:12.5px">⚡ Abrir protótipo navegável</a>
+    </div>
+  </div>
+
+  <div class="panel" id="panel">
+    <h3>Demo do ciclo completo</h3>
+    <div class="row">
+      <button class="btn brand full" data-demo="cycle">▶ Simular descarte de morador</button>
+      <button class="btn full" id="btn-stop">Parar / Resetar</button>
+    </div>
+
+    <h3>Vistas</h3>
+    <div class="toggle" data-on="false" id="t-xray"><span>Raio-X (paredes transparentes)</span><span class="sw"></span></div>
+    <div class="toggle" data-on="false" id="t-explode"><span>Vista explodida</span><span class="sw"></span></div>
+    <div class="toggle" data-on="true" id="t-annotations"><span>Anotações ao passar o mouse</span><span class="sw"></span></div>
+    <div class="toggle" data-on="true" id="t-rotate"><span>Rotação automática</span><span class="sw"></span></div>
+
+    <h3>Câmera</h3>
+    <div class="row">
+      <button class="btn" data-view="front">Frente</button>
+      <button class="btn" data-view="side">Lateral</button>
+      <button class="btn" data-view="top">Topo</button>
+      <button class="btn" data-view="iso">Isométrica</button>
+    </div>
+
+    <h3>Diferenciais entrepreneuriais</h3>
+    <div class="legend">
+      <div class="item">⚙ Compactador integrado: 5× mais densidade</div>
+      <div class="item">🎯 App de pontos pro morador (mudança comportamental)</div>
+      <div class="item">📊 Relatório ESG mensal pro síndico (marketing imobiliário)</div>
+      <div class="item">💸 Revenue share da venda do PET (70/30)</div>
+      <div class="item">🚛 Auto-pickup quando atinge 80% (logística automática)</div>
+    </div>
+  </div>
+
+  <div class="bm">
+    <div class="tabs">
+      <button class="tab active" data-bm="business">Modelo de Negócio</button>
+      <button class="tab" data-bm="bom">BOM</button>
+    </div>
+    <div class="body" id="bm-body"></div>
+    <div class="total" id="bm-total"></div>
+  </div>
+
+  <div class="status">
+    <span class="led" id="status-led"></span>
+    <span><b id="status-title">Pronto</b></span>
+    <span id="status-detail">Toque "Simular descarte" para ver o ciclo</span>
+  </div>
+
+  <div id="annot"></div>
+
+  <script>
+  (function(){
+    function showErr(msg){
+      const e = document.getElementById('err');
+      if(e){ e.style.display = 'block'; e.textContent = '⚠ ' + msg; }
+      console.error(msg);
+    }
+    window.addEventListener('error', function(ev){
+      showErr('Erro JS: ' + (ev.message || 'desconhecido') + (ev.filename ? ' @ ' + ev.filename + ':' + ev.lineno : ''));
+    });
+  })();
+  </script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+
+  <script>
+  (function(){
+    if(typeof THREE === 'undefined'){
+      const e = document.getElementById('err');
+      if(e){ e.style.display='block'; e.textContent='⚠ Three.js não carregou. Verifique conexão (cdnjs).'; }
+      throw new Error('THREE not loaded');
+    }
+  })();
+  </script>
+
+  <script>
+  /* =========================================================
+     ECOPLASTIC — Cabine horizontal para condomínios
+     (layout horizontal: cabe melhor em hall/garagem/área de serviço,
+      slot na altura da cintura, pistão horizontal)
+     ========================================================= */
+
+  /* BOM realista para escola (versão protótipo) + projeção industrial */
+  const BOM = [
+    {key:'esp32',     cat:'electronic', name:'ESP32 NodeMCU (WiFi/BT)',          qty:1, unit:60,  note:'controle + WiFi'},
+    {key:'cam',       cat:'electronic', name:'Câmera OV2640 + lente',            qty:1, unit:55,  note:'identifica PET'},
+    {key:'tft',       cat:'electronic', name:'Display TFT 2.4" SPI colorido',    qty:1, unit:42,  note:'interface morador'},
+    {key:'qrreader',  cat:'electronic', name:'Câmera 2ª (QR do app)',            qty:1, unit:35,  note:'pareamento por QR'},
+    {key:'motor',     cat:'electronic', name:'Motor DC 12V com redução 30 RPM',  qty:1, unit:90,  note:'aciona compactador'},
+    {key:'lead',      cat:'electronic', name:'Fuso trapezoidal + castanha + rolamentos', qty:1, unit:75, note:'transmissão linear'},
+    {key:'piston',    cat:'electronic', name:'Pistão (bloco nylon usinado)',     qty:1, unit:35,  note:'cabeça compactadora'},
+    {key:'limit',     cat:'electronic', name:'Chaves fim-de-curso (2)',          qty:2, unit:6,   note:'detecta topo/fundo'},
+    {key:'loadcell',  cat:'electronic', name:'Célula de carga 5 kg + HX711',     qty:1, unit:48,  note:'pesa estoque'},
+    {key:'ultraso',   cat:'electronic', name:'HC-SR04 (presença morador)',       qty:1, unit:12,  note:'detecta aproximação'},
+    {key:'uvled',     cat:'electronic', name:'LED UV 365nm + driver',            qty:1, unit:18,  note:'PET fluoresce sob UV'},
+    {key:'servo',     cat:'electronic', name:'Servo MG996R (porta inlet)',       qty:1, unit:38,  note:'abre/tranca slot'},
+    {key:'relay',     cat:'electronic', name:'Módulo relé 2 canais',             qty:1, unit:18,  note:'aciona motor'},
+    {key:'buzzer',    cat:'electronic', name:'Buzzer ativo + LED RGB',           qty:1, unit:10,  note:'feedback'},
+    {key:'psu',       cat:'electronic', name:'Fonte 12V 5A + step-down 5V',      qty:1, unit:75,  note:'alimentação'},
+    {key:'jumpers',   cat:'electronic', name:'Cabeamento + bornes + abraçadeiras', qty:1, unit:35, note:'instalação'},
+    {key:'cabinet',   cat:'structural', name:'MDF 15mm pintado (gabinete)',      qty:1, unit:180, note:'corpo principal'},
+    {key:'acrylic',   cat:'structural', name:'Acrílico cristal 4mm (janelas)',   qty:1, unit:90,  note:'visualizar compactação'},
+    {key:'castors',   cat:'structural', name:'Rodízios industriais com freio (4)', qty:4, unit:18, note:'mobilidade'},
+    {key:'lock',      cat:'structural', name:'Fechadura tubular (acesso staff)', qty:1, unit:35,  note:'segurança'},
+    {key:'hinges',    cat:'structural', name:'Dobradiças (porta frontal)',       qty:3, unit:8,   note:'porta de coleta'},
+    {key:'graphics',  cat:'structural', name:'Adesivagem + branding',            qty:1, unit:80,  note:'identidade visual'},
+    {key:'screws',    cat:'structural', name:'Parafusos + cantoneiras + porcas', qty:1, unit:40,  note:'montagem'}
+  ];
+  const BOM_TOTAL = BOM.reduce((s,i)=> s + i.qty*i.unit, 0);
+
+  /* Modelo de negócio: 3 fluxos de receita */
+  const STREAMS = [
+    {
+      title:'1. Hardware (one-time)',
+      headline:'R$ 2.500 / unidade',
+      detail:'Venda da máquina ao condomínio. Margem de ~50% sobre o BOM. Alternativa: leasing de R$ 0 entrada + 24× R$ 199, com a máquina como propriedade da EcoPlastic.'
+    },
+    {
+      title:'2. SaaS mensal (recorrente)',
+      headline:'R$ 199 / mês / unidade',
+      detail:'Acesso ao app de pontos dos moradores, dashboard ESG do síndico, relatório PDF mensal, integração com cooperativa, suporte e atualizações de firmware. Esta é a receita que escala.'
+    },
+    {
+      title:'3. Revenue share da venda',
+      headline:'30% da venda do PET',
+      detail:'Quando a EcoPlastic intermedia a coleta junto à cooperativa parceira, fica com 30% do valor pago pelo plástico (preço médio: R$ 2,50/kg). 70% volta como crédito ao condomínio (e os moradores podem trocar pontos por desconto no boleto).'
+    }
+  ];
+
+  /* Materiais PBR */
+  const MAT = {
+    aluBrushed:  new THREE.MeshStandardMaterial({color:0xa9adb1, metalness:0.85, roughness:0.46}),
+    cabinetWhite:new THREE.MeshStandardMaterial({color:0xeef2f5, metalness:0.05, roughness:0.55}),
+    cabinetGreen:new THREE.MeshStandardMaterial({color:0x2ecc71, metalness:0.15, roughness:0.5}),
+    cabinetDark: new THREE.MeshStandardMaterial({color:0x1d2a36, metalness:0.4, roughness:0.55}),
+    acrylic:     new THREE.MeshStandardMaterial({color:0xc8e0e8, metalness:0.0, roughness:0.05, transparent:true, opacity:0.18}),
+    pcbGreen:    new THREE.MeshStandardMaterial({color:0x0e5a2c, metalness:0.2, roughness:0.65}),
+    chipBlack:   new THREE.MeshStandardMaterial({color:0x0a0a0c, metalness:0.4, roughness:0.5}),
+    metalSilver: new THREE.MeshStandardMaterial({color:0xb8bcc0, metalness:0.92, roughness:0.32}),
+    sensorChrome:new THREE.MeshStandardMaterial({color:0xc8ccd2, metalness:0.85, roughness:0.35}),
+    rubber:      new THREE.MeshStandardMaterial({color:0x14171c, metalness:0.0, roughness:0.95}),
+    motorBlue:   new THREE.MeshStandardMaterial({color:0x1f5db8, metalness:0.5, roughness:0.45}),
+    rod:         new THREE.MeshStandardMaterial({color:0xcacdd2, metalness:0.95, roughness:0.18}),
+    piston:      new THREE.MeshStandardMaterial({color:0x394554, metalness:0.4, roughness:0.6}),
+    petBottle:   new THREE.MeshStandardMaterial({color:0xeaf6ff, metalness:0.0, roughness:0.18, transparent:true, opacity:0.55}),
+    petCrushed:  new THREE.MeshStandardMaterial({color:0xb8d8e8, metalness:0.0, roughness:0.4, transparent:true, opacity:0.7}),
+    floor:       new THREE.MeshStandardMaterial({color:0x10171f, metalness:0.0, roughness:1.0}),
+    ledOff:      new THREE.MeshStandardMaterial({color:0x2a2f3a, metalness:0.0, roughness:0.4}),
+    ledGreen:    new THREE.MeshStandardMaterial({color:0x66ff88, emissive:0x44ff66, emissiveIntensity:1.4, metalness:0, roughness:0.2}),
+    ledRed:      new THREE.MeshStandardMaterial({color:0xff5566, emissive:0xff2233, emissiveIntensity:1.4, metalness:0, roughness:0.2}),
+    ledUV:       new THREE.MeshStandardMaterial({color:0xb085ff, emissive:0x8855ff, emissiveIntensity:1.6, metalness:0, roughness:0.2}),
+    cameraLens:  new THREE.MeshStandardMaterial({color:0x0a0a0e, metalness:0.6, roughness:0.2})
+  };
+  function paintMat(hex){ return new THREE.MeshStandardMaterial({color:hex, metalness:0.10, roughness:0.55}) }
+
+  const BOM_MESHES = {};
+  function tagBom(mesh, key){
+    mesh.userData = mesh.userData || {};
+    mesh.userData.bomKey = key;
+    if(!BOM_MESHES[key]) BOM_MESHES[key] = [];
+    BOM_MESHES[key].push(mesh);
+    return mesh;
+  }
+
+  /* CENA */
+  const stage = document.getElementById('stage');
+  const W = () => window.innerWidth;
+  const H = () => window.innerHeight;
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x0a1218);
+  scene.fog = new THREE.Fog(0x0a1218, 380, 800);
+
+  const camera = new THREE.PerspectiveCamera(36, W()/H(), 0.5, 2000);
+  /* Câmera mais baixa para o layout horizontal (cabine só 65 cm de altura) */
+  camera.position.set(170, 90, 200);
+
+  const renderer = new THREE.WebGLRenderer({antialias:true, powerPreference:'high-performance'});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(W(), H());
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+  stage.appendChild(renderer.domElement);
+
+  scene.add(new THREE.AmbientLight(0x6080a0, 0.38));
+  const keyL = new THREE.DirectionalLight(0xfff3df, 1.0);
+  keyL.position.set(120, 200, 160);
+  keyL.castShadow = true; keyL.shadow.mapSize.set(2048,2048);
+  /* Frustum do shadow ajustado pra envergadura horizontal de 90 cm */
+  keyL.shadow.camera.left=-200; keyL.shadow.camera.right=200;
+  keyL.shadow.camera.top=140; keyL.shadow.camera.bottom=-30;
+  keyL.shadow.camera.near=1; keyL.shadow.camera.far=600;
+  keyL.shadow.bias=-0.0008;
+  scene.add(keyL);
+  const fillL = new THREE.DirectionalLight(0x9ec5ff, 0.45); fillL.position.set(-200, 110, 60); scene.add(fillL);
+  const rimL  = new THREE.DirectionalLight(0x3affb0, 0.32); rimL.position.set(0, 60, -180);    scene.add(rimL);
+
+  const floor = new THREE.Mesh(new THREE.CircleGeometry(420, 64), MAT.floor);
+  floor.rotation.x = -Math.PI/2; floor.receiveShadow = true; scene.add(floor);
+  /* GridHelper.position é read-only (Three.js define position via defineProperty sem setter).
+     Em vez de Object.assign({position: new Vector3(...)}), mutamos o Vector3 existente. */
+  const grid = new THREE.GridHelper(420, 42, 0x1d3349, 0x12222e);
+  grid.position.set(0, 0.05, 0);
+  scene.add(grid);
+
+  /* OrbitControls */
+  function makeOrbit(camera, dom){
+    /* Target mais baixo (cabine horizontal, altura 65 cm) */
+    const target = new THREE.Vector3(0, 35, 0);
+    const sph = new THREE.Spherical();
+    const offset = new THREE.Vector3(); offset.copy(camera.position).sub(target);
+    sph.setFromVector3(offset);
+    const state = { isDown:false, button:0, lastX:0, lastY:0,
+      autoRotate:true, autoRotateSpeed:0.0017,
+      minDistance:60, maxDistance:520, minPolar:0.18, maxPolar:Math.PI/2 - 0.04 };
+    function onDown(e){ e.preventDefault(); state.isDown=true; state.button=e.button; state.lastX=e.clientX; state.lastY=e.clientY }
+    function onMove(e){
+      if(!state.isDown) return;
+      const dx=e.clientX-state.lastX, dy=e.clientY-state.lastY;
+      state.lastX=e.clientX; state.lastY=e.clientY;
+      if(state.button===2 || e.shiftKey){
+        const ps = sph.radius * 0.0018;
+        const right = new THREE.Vector3(); right.setFromMatrixColumn(camera.matrix, 0);
+        const up    = new THREE.Vector3(); up.setFromMatrixColumn(camera.matrix, 1);
+        target.add(right.multiplyScalar(-dx*ps)).add(up.multiplyScalar(dy*ps));
+      } else {
+        sph.theta -= dx*0.005; sph.phi -= dy*0.005;
+        sph.phi = Math.max(state.minPolar, Math.min(state.maxPolar, sph.phi));
+      }
+    }
+    function onUp(){ state.isDown=false }
+    function onWheel(e){ e.preventDefault(); const f=Math.exp(e.deltaY*0.0012);
+      sph.radius=Math.max(state.minDistance, Math.min(state.maxDistance, sph.radius*f)) }
+    let pinchDist=0;
+    function onTouchStart(e){
+      if(e.touches.length===1){ state.isDown=true; state.button=0; state.lastX=e.touches[0].clientX; state.lastY=e.touches[0].clientY; }
+      else if(e.touches.length===2){ const dx=e.touches[0].clientX-e.touches[1].clientX, dy=e.touches[0].clientY-e.touches[1].clientY; pinchDist=Math.hypot(dx,dy); }
+    }
+    function onTouchMove(e){
+      if(e.touches.length===1 && state.isDown){
+        e.preventDefault();
+        const dx=e.touches[0].clientX-state.lastX, dy=e.touches[0].clientY-state.lastY;
+        state.lastX=e.touches[0].clientX; state.lastY=e.touches[0].clientY;
+        sph.theta -= dx*0.006; sph.phi -= dy*0.006;
+        sph.phi = Math.max(state.minPolar, Math.min(state.maxPolar, sph.phi));
+      } else if(e.touches.length===2){
+        e.preventDefault();
+        const dx=e.touches[0].clientX-e.touches[1].clientX, dy=e.touches[0].clientY-e.touches[1].clientY;
+        const d=Math.hypot(dx,dy);
+        if(pinchDist>0){ const f=pinchDist/d; sph.radius=Math.max(state.minDistance, Math.min(state.maxDistance, sph.radius*f)) }
+        pinchDist=d;
+      }
+    }
+    function onTouchEnd(){ state.isDown=false; pinchDist=0 }
+    dom.addEventListener('mousedown', onDown);
+    window.addEventListener('mousemove', onMove); window.addEventListener('mouseup', onUp);
+    dom.addEventListener('wheel', onWheel, {passive:false});
+    dom.addEventListener('contextmenu', e=>e.preventDefault());
+    dom.addEventListener('touchstart', onTouchStart, {passive:false});
+    dom.addEventListener('touchmove', onTouchMove, {passive:false});
+    dom.addEventListener('touchend', onTouchEnd);
+    function update(){
+      if(state.autoRotate && !state.isDown){ sph.theta += state.autoRotateSpeed }
+      offset.setFromSpherical(sph); camera.position.copy(target).add(offset); camera.lookAt(target);
+    }
+    function setView(name){
+      /* Distâncias adequadas pra cabine horizontal (90 cm de largura) */
+      const r=210;
+      if(name==='front'){ sph.radius=r; sph.theta=0; sph.phi=Math.PI/2-0.22; }
+      else if(name==='side'){ sph.radius=r; sph.theta=Math.PI/2; sph.phi=Math.PI/2-0.22; }
+      else if(name==='top'){ sph.radius=r*0.95; sph.theta=Math.PI/4; sph.phi=0.25; }
+      else if(name==='iso'){ sph.radius=r; sph.theta=Math.PI/4+0.3; sph.phi=Math.PI/2-0.50; }
+    }
+    return {update, target, state, setView};
+  }
+  const orbit = makeOrbit(camera, renderer.domElement);
+
+  function nm(g,n){ g.name=n; return g }
+  function box(w,h,d, mat, x,y,z){
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), mat);
+    m.position.set(x||0, y||0, z||0); m.castShadow=true; m.receiveShadow=true; return m;
+  }
+  function cyl(rt, rb, h, segs, mat){
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, segs||32), mat);
+    m.castShadow=true; m.receiveShadow=true; return m;
+  }
+  function torus(r, tube, segs, mat){
+    const m = new THREE.Mesh(new THREE.TorusGeometry(r, tube, 8, segs||24), mat);
+    m.castShadow=true; m.receiveShadow=true; return m;
+  }
+
+  /* ============== CONSTANTES DE GEOMETRIA — LAYOUT HORIZONTAL ============== */
+  const Wc = 90;   // largura cabine (horizontal)
+  const Dc = 45;   // profundidade
+  const Hc = 65;   // altura total (slot na altura da cintura)
+  const baseY = 4; // chão acima dos rodízios
+
+  /* Subdivisões internas:
+     Y baseY..baseY+18  : tanque de estoque (full width)
+     Y baseY+18..baseY+Hc : compartimento superior
+       X -Wc/2..+Wc/2-30 : câmara de compactação (esquerda + centro)
+       X +Wc/2-30..+Wc/2 : painel de UI (display + leitor QR + slot)
+     Slot de inserção: no topo da cabine, sobre a câmara */
+
+  /* ============== RODÍZIOS ============== */
+  function buildCastors(){
+    const g = nm(new THREE.Group(), 'castors');
+    function castor(x,z){
+      const c = new THREE.Group();
+      c.add(cyl(1.4, 1.4, 4, 16, MAT.cabinetDark));
+      const fork = box(5, 2, 6, MAT.cabinetDark, 0, -2.4, 0); c.add(fork);
+      const wheel = cyl(2.4, 2.4, 2.0, 24, MAT.rubber);
+      wheel.rotation.z = Math.PI/2; wheel.position.y = -4; c.add(wheel);
+      c.position.set(x, 4, z);
+      return c;
+    }
+    g.add(castor( Wc/2 - 6,  Dc/2 - 6));
+    g.add(castor(-Wc/2 + 6,  Dc/2 - 6));
+    g.add(castor( Wc/2 - 6, -Dc/2 + 6));
+    g.add(castor(-Wc/2 + 6, -Dc/2 + 6));
+    g.traverse(o=>{ if(o.isMesh){ tagBom(o, 'castors'); o.userData.label='Rodízio industrial com freio'; }});
+    return g;
+  }
+
+  /* ============== GABINETE — HORIZONTAL ============== */
+  /* Cabinet branco com header verde EcoPlastic e acrílico transparente
+     na frente (vê-se tanque inferior + janela do compactador no centro).
+     Layout horizontal:
+       Y 4..22   : tanque de estoque (full width, com janela acrílica frontal)
+       Y 22..60  : zona de compactação + UI (split em X)
+         X -45..+15 : câmara de compactação (motor + fuso + pistão horizontais)
+         X +15..+45 : painel UI (display + leitor QR + slot)
+       Y 60..69  : header (vinil verde com branding)
+       Topo: tampa com slot de inserção (acima da câmara) */
+  function buildCabinet(){
+    const g = nm(new THREE.Group(), 'cabinet');
+    const t = 0.8; // espessura parede
+    const tankH    = 18;            // altura do compartimento do tanque
+    const upperH   = Hc - tankH - 9;// altura do compartimento superior (compactador + UI)
+    const headerH  = 9;             // altura da faixa header verde
+    const tankTopY = baseY + tankH; // Y do "teto" do tanque (= chão da câmara)
+    const headerY  = baseY + tankH + upperH; // Y do começo do header
+
+    /* Plinto de fundo (chão do tanque) */
+    g.add(box(Wc, t, Dc, MAT.cabinetDark, 0, baseY + t/2, 0));
+
+    /* TAMPA SUPERIOR (com furo pro slot de inserção) */
+    /* Faço a tampa em duas peças (esquerda e direita do slot) + duas peças (frente e trás) */
+    const slotCenterX = -10;        // centro do slot (sobre a câmara)
+    const slotW = 18;               // largura do slot
+    const slotD = 4;                // profundidade do slot
+    /* Tampa esquerda do slot */
+    g.add(box((slotCenterX - slotW/2) - (-Wc/2), t, Dc, MAT.cabinetWhite,
+             (-Wc/2 + (slotCenterX - slotW/2))/2, baseY + Hc - t/2, 0));
+    /* Tampa direita do slot */
+    g.add(box((Wc/2) - (slotCenterX + slotW/2), t, Dc, MAT.cabinetWhite,
+             (slotCenterX + slotW/2 + Wc/2)/2, baseY + Hc - t/2, 0));
+    /* Tampa frente do slot (atrás do slot) */
+    g.add(box(slotW, t, (Dc/2) - slotD/2, MAT.cabinetWhite,
+             slotCenterX, baseY + Hc - t/2, (slotD/2 + Dc/2)/2));
+    /* Tampa atrás do slot (frente do slot) */
+    g.add(box(slotW, t, (Dc/2) - slotD/2, MAT.cabinetWhite,
+             slotCenterX, baseY + Hc - t/2, -(slotD/2 + Dc/2)/2));
+
+    /* PAINEL TRASEIRO (full height) */
+    const back = box(Wc, Hc - 2*t, t, MAT.cabinetWhite, 0, baseY + Hc/2, Dc/2 - t/2);
+    tagBom(back, 'cabinet'); back.userData.label = 'Gabinete MDF 15mm pintado';
+    g.add(back);
+
+    /* PAINEIS LATERAIS opacos (esquerdo e direito) */
+    const left = box(t, Hc - 2*t, Dc - 2*t, MAT.cabinetWhite, -Wc/2 + t/2, baseY + Hc/2, 0);
+    tagBom(left, 'cabinet'); left.userData.label = 'Painel lateral esquerdo';
+    g.add(left);
+    const right = box(t, Hc - 2*t, Dc - 2*t, MAT.cabinetWhite, Wc/2 - t/2, baseY + Hc/2, 0);
+    tagBom(right, 'cabinet'); right.userData.label = 'Painel lateral direito';
+    g.add(right);
+
+    /* CHÃO INTERNO da câmara (separa tanque do compartimento de cima)
+       — só na zona do compactador (esquerda + centro). Tem um buraco com flap basculante
+       no centro pro crushed cair no tanque. */
+    /* Painel divisor: à esquerda do flap */
+    const divHoleW = 22, divHoleX = -10; // posição do "buraco" central (alinhado ao flap)
+    const divLeftW = (divHoleX - divHoleW/2) - (-Wc/2 + t);
+    g.add(box(divLeftW, t, Dc - 2*t, MAT.cabinetDark,
+             (-Wc/2 + t + divHoleX - divHoleW/2)/2, tankTopY + t/2, 0));
+    /* Painel divisor: à direita do flap, indo até o final da zona do compactador (X = +15) */
+    const compactorRightX = Wc/2 - 30; // = +15 (limite direito da câmara)
+    const divRightW = compactorRightX - (divHoleX + divHoleW/2);
+    g.add(box(divRightW, t, Dc - 2*t, MAT.cabinetDark,
+             (divHoleX + divHoleW/2 + compactorRightX)/2, tankTopY + t/2, 0));
+    /* Divisor sob o painel UI (X de +15 a +45): chão sólido (não cai garrafa pelo lado da UI) */
+    g.add(box(Wc/2 - compactorRightX - t, t, Dc - 2*t, MAT.cabinetDark,
+             (compactorRightX + Wc/2 - t)/2, tankTopY + t/2, 0));
+
+    /* PAREDE VERTICAL interna que separa câmara do painel UI (X = compactorRightX) */
+    const partition = box(t, upperH - t, Dc - 2*t, MAT.cabinetWhite,
+                         compactorRightX, tankTopY + (upperH - t)/2, 0);
+    tagBom(partition, 'cabinet'); partition.userData.label = 'Divisória interna câmara/UI';
+    g.add(partition);
+
+    /* FRENTE — composta de 3 faixas verticais e 2 zonas horizontais:
+       Faixa inferior (tanque): janela acrílica grande (todo Wc - moldura)
+       Faixa superior esquerda+centro (compactador): janela acrílica menor (vê o pistão)
+       Faixa superior direita (UI): opaca, recebe display+QR */
+
+    /* Janela frontal do TANQUE */
+    const tankWinW = Wc - 8;
+    const tankWin = box(tankWinW, tankH - 4, t*0.5, MAT.acrylic, 0, baseY + 2 + (tankH-4)/2, -Dc/2 + t/2);
+    tagBom(tankWin, 'acrylic'); tankWin.userData.label = 'Janela acrílica do tanque (estoque visível)';
+    g.add(tankWin);
+    /* Moldura tanque (laterais + topo da janela) */
+    g.add(box((Wc - tankWinW)/2, tankH - 4, t, MAT.cabinetWhite, -(Wc - tankWinW)/4 - tankWinW/2, baseY + 2 + (tankH-4)/2, -Dc/2 + t/2));
+    g.add(box((Wc - tankWinW)/2, tankH - 4, t, MAT.cabinetWhite,  (Wc - tankWinW)/4 + tankWinW/2, baseY + 2 + (tankH-4)/2, -Dc/2 + t/2));
+    /* Tira separadora horizontal entre tanque e parte superior */
+    g.add(box(Wc, 2, t, MAT.cabinetWhite, 0, baseY + tankH, -Dc/2 + t/2));
+
+    /* Janela frontal da CÂMARA DE COMPACTAÇÃO (zona esquerda+centro)
+       upperH já exclui o header — então sobra um respiro de 2cm em cima
+       e 2cm em baixo (moldura) para a janela. */
+    const compFrontW = compactorRightX - (-Wc/2) - 4;
+    const compFrontH = upperH - 4;
+    const compFrontCenterX = (-Wc/2 + 2 + compactorRightX - 2)/2;
+    const compFrontCenterY = tankTopY + 2 + compFrontH/2;
+    const compWin = box(compFrontW, compFrontH, t*0.5, MAT.acrylic,
+                       compFrontCenterX, compFrontCenterY, -Dc/2 + t/2);
+    tagBom(compWin, 'acrylic'); compWin.userData.label = 'Janela acrílica do compactador';
+    g.add(compWin);
+    /* Moldura ao redor da janela do compactador (esquerda, direita, topo) */
+    g.add(box(2, compFrontH, t, MAT.cabinetWhite, -Wc/2 + 1, compFrontCenterY, -Dc/2 + t/2));
+    g.add(box(2, compFrontH, t, MAT.cabinetWhite, compactorRightX - 1, compFrontCenterY, -Dc/2 + t/2));
+    g.add(box(compFrontW + 4, 2, t, MAT.cabinetWhite,
+             compFrontCenterX, tankTopY + 2 + compFrontH + 1, -Dc/2 + t/2));
+
+    /* Painel frontal da zona UI (opaco branco) — toda a faixa upperH (sem header) */
+    const uiFrontW = Wc/2 - compactorRightX;
+    const uiFront = box(uiFrontW, upperH, t, MAT.cabinetWhite,
+                       (compactorRightX + Wc/2)/2, tankTopY + upperH/2, -Dc/2 + t/2);
+    tagBom(uiFront, 'cabinet'); uiFront.userData.label = 'Painel frontal UI (porta de manutenção)';
+    g.add(uiFront);
+
+    /* HEADER frontal (vinil verde, full width) */
+    const topFront = box(Wc, headerH, t, MAT.cabinetGreen, 0, headerY + headerH/2, -Dc/2 + t/2);
+    tagBom(topFront, 'cabinet'); topFront.userData.label = 'Header EcoPlastic (vinil verde)';
+    g.add(topFront);
+
+    /* Logo "EcoPlastic" (canvas texture) */
+    const logoCanvas = document.createElement('canvas'); logoCanvas.width=1024; logoCanvas.height=128;
+    const lc = logoCanvas.getContext('2d');
+    lc.fillStyle='#2ecc71'; lc.fillRect(0,0,1024,128);
+    lc.fillStyle='#062012'; lc.font='bold 60px sans-serif';
+    lc.fillText('EcoPlastic', 40, 80);
+    lc.fillStyle='#062012'; lc.font='16px sans-serif';
+    lc.fillText('Recycle-as-a-Service · Compactador Inteligente Horizontal', 40, 108);
+    /* leaf */
+    lc.fillStyle='#062012';
+    lc.beginPath(); lc.ellipse(940, 64, 30, 19, -0.4, 0, Math.PI*2); lc.fill();
+    lc.fillStyle='#2ecc71';
+    lc.beginPath(); lc.ellipse(947, 60, 13, 6, -0.4, 0, Math.PI*2); lc.fill();
+
+    const logoTex = new THREE.CanvasTexture(logoCanvas); logoTex.encoding = THREE.sRGBEncoding;
+    const logoMat = new THREE.MeshStandardMaterial({map:logoTex, metalness:0, roughness:0.55});
+    const logoPlane = new THREE.Mesh(new THREE.PlaneGeometry(Wc - 4, headerH - 1), logoMat);
+    logoPlane.position.set(0, headerY + headerH/2, -Dc/2 - 0.05);
+    g.add(logoPlane);
+
+    /* Para-choque amarelo (rodapé frente + traseira) */
+    g.add(box(Wc + 0.6, 1.5, 0.5, paintMat(0xf39c12), 0, baseY + 1, -Dc/2 - 0.3));
+    g.add(box(Wc + 0.6, 1.5, 0.5, paintMat(0xf39c12), 0, baseY + 1,  Dc/2 + 0.3));
+
+    /* Expõe pontos úteis para outros módulos */
+    g.userData.tankTopY = tankTopY;
+    g.userData.headerY  = headerY;
+    g.userData.compactorRightX = compactorRightX;
+    g.userData.divHoleX = divHoleX;
+    g.userData.divHoleW = divHoleW;
+    g.userData.slotCenterX = slotCenterX;
+    g.userData.slotW = slotW;
+    g.userData.slotD = slotD;
+
+    return g;
+  }
+
+  /* ============== INLET (slot só pra PET, no TOPO do gabinete) ============== */
+  function buildInlet(cabRef){
+    const g = nm(new THREE.Group(), 'inlet');
+    /* Slot na tampa do gabinete (na altura da cintura — ~73 cm do chão), sobre a câmara */
+    const slotCenterX = cabRef.userData.slotCenterX;
+    const slotW = cabRef.userData.slotW;
+    const slotD = cabRef.userData.slotD;
+    const slotY = baseY + Hc;        // topo da cabine
+
+    /* "Boca" escura do slot (recorte visível na tampa) */
+    const mouth = box(slotW, 0.6, slotD, paintMat(0x062012), slotCenterX, slotY + 0.1, 0);
+    tagBom(mouth, 'servo'); mouth.userData.label = 'Slot servo-acionado (só abre quando QR está OK)';
+    g.add(mouth);
+
+    /* Moldura escura ao redor do slot (relevo) */
+    g.add(box(slotW + 4, 0.4, 0.6, MAT.cabinetDark, slotCenterX, slotY + 0.4, slotD/2 + 0.3));
+    g.add(box(slotW + 4, 0.4, 0.6, MAT.cabinetDark, slotCenterX, slotY + 0.4, -slotD/2 - 0.3));
+    g.add(box(0.6, 0.4, slotD + 1.2, MAT.cabinetDark, slotCenterX - slotW/2 - 0.3, slotY + 0.4, 0));
+    g.add(box(0.6, 0.4, slotD + 1.2, MAT.cabinetDark, slotCenterX + slotW/2 + 0.3, slotY + 0.4, 0));
+
+    /* Aviso "SOMENTE PET — até 2L" gravado na tampa, próximo ao slot */
+    const tagCanvas = document.createElement('canvas'); tagCanvas.width=512; tagCanvas.height=128;
+    const tc = tagCanvas.getContext('2d');
+    tc.fillStyle='#eef2f5'; tc.fillRect(0,0,512,128);
+    tc.fillStyle='#1d2a36'; tc.font='bold 36px sans-serif'; tc.fillText('SOMENTE PET', 24, 56);
+    tc.fillStyle='#5a6f80'; tc.font='22px sans-serif'; tc.fillText('Garrafas até 2L · qualquer orientação', 24, 96);
+    const tagTex = new THREE.CanvasTexture(tagCanvas); tagTex.encoding = THREE.sRGBEncoding;
+    const tagMat = new THREE.MeshStandardMaterial({map:tagTex, metalness:0, roughness:0.7});
+    const tagPlane = new THREE.Mesh(new THREE.PlaneGeometry(20, 5), tagMat);
+    tagPlane.rotation.x = -Math.PI/2;
+    tagPlane.position.set(slotCenterX, slotY + 0.02, slotD/2 + 4);
+    g.add(tagPlane);
+
+    /* Servo MG996R (oculto sob a tampa, perto do slot) */
+    const servo = box(4, 4, 2, paintMat(0x123a6a), slotCenterX + slotW/2 + 4, baseY + Hc - 4, 0);
+    tagBom(servo, 'servo'); servo.userData.label = 'Servo MG996R (porta do slot)';
+    g.add(servo);
+
+    g.userData.slotY = slotY;
+    g.userData.slotCenterX = slotCenterX;
+    g.userData.mouthRef = mouth;
+    return g;
+  }
+
+  /* ============== DISPLAY TFT 2.4" ============== */
+  function buildDisplay(cabRef){
+    const g = nm(new THREE.Group(), 'display');
+    /* Posição: painel UI à direita, no terço superior */
+    const compactorRightX = cabRef.userData.compactorRightX;
+    const dX = (compactorRightX + Wc/2)/2; // centro do painel UI (~+30)
+    const dY = cabRef.userData.headerY - 9; // logo abaixo do header
+
+    /* Bezel */
+    const bezel = box(22, 16, 0.6, MAT.cabinetDark, dX, dY, -Dc/2 + 0.4);
+    g.add(bezel);
+
+    /* Canvas dinâmico */
+    const c = document.createElement('canvas');
+    c.width = 512; c.height = 384;
+    const cx = c.getContext('2d');
+
+    function drawQR(ctx, x, y, size, text){
+      if(typeof qrcode === 'undefined'){
+        ctx.fillStyle = '#001a30'; ctx.fillRect(x, y, size, size);
+        ctx.strokeStyle = '#2ecc71'; ctx.lineWidth = 2;
+        ctx.strokeRect(x+4, y+4, size-8, size-8);
+        ctx.fillStyle = '#2ecc71'; ctx.font = 'bold 16px monospace';
+        ctx.fillText('ECO', x + size/2 - 18, y + size/2 - 4);
+        ctx.fillText('QR', x + size/2 - 12, y + size/2 + 16);
+        return;
+      }
+      try {
+        const qr = qrcode(0, 'M');
+        qr.addData(text); qr.make();
+        const count = qr.getModuleCount();
+        const px = size / count;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(x, y, size, size);
+        ctx.fillStyle = '#062012';
+        for(let r=0; r<count; r++){
+          for(let cc=0; cc<count; cc++){
+            if(qr.isDark(r, cc)){
+              ctx.fillRect(Math.floor(x + cc*px), Math.floor(y + r*px),
+                           Math.ceil(px) + 0.5, Math.ceil(px) + 0.5);
+            }
+          }
+        }
+      } catch(e){
+        ctx.fillStyle = '#3a1a1a'; ctx.fillRect(x, y, size, size);
+        ctx.fillStyle = '#ffaaaa'; ctx.font = '12px monospace';
+        ctx.fillText('QR err', x + size/2 - 16, y + size/2);
+      }
+    }
+
+    function draw(s){
+      // bg degrade
+      const grd = cx.createLinearGradient(0,0,0,384);
+      grd.addColorStop(0,'#0e2a1f'); grd.addColorStop(1,'#06140e');
+      cx.fillStyle = grd; cx.fillRect(0,0,512,384);
+
+      if(s.mode === 'idle'){
+        // Header
+        cx.fillStyle = '#2ecc71'; cx.fillRect(0,0,512,52);
+        cx.fillStyle = '#062012'; cx.font = 'bold 24px sans-serif';
+        cx.fillText('EcoPlastic', 18, 34);
+        cx.font = '13px sans-serif';
+        cx.fillText('Compactador Inteligente · Cond. Edif. Verde', 200, 32);
+        // Counters dia
+        cx.fillStyle = '#9bd6ff'; cx.font = '12px monospace';
+        cx.fillText('HOJE NO PRÉDIO', 20, 80);
+        cx.font = 'bold 44px sans-serif'; cx.fillStyle = '#2ecc71';
+        cx.fillText(s.todayBottles + '', 20, 130);
+        cx.font = '13px sans-serif'; cx.fillStyle = '#cfe1ff';
+        cx.fillText('garrafas · ' + s.todayKg.toFixed(2) + ' kg', 20, 152);
+
+        // Mês counters
+        cx.fillStyle = '#9bd6ff'; cx.font = '12px monospace';
+        cx.fillText('NO MÊS', 20, 190);
+        cx.font = 'bold 28px sans-serif'; cx.fillStyle = '#fff';
+        cx.fillText(s.monthBottles + ' garrafas', 20, 222);
+        cx.font = '12px sans-serif'; cx.fillStyle = '#9bd6ff';
+        cx.fillText('= ' + s.co2 + ' kg CO₂ evitado · ' + s.trees + ' árvores 🌳', 20, 244);
+
+        // Tanque
+        cx.fillStyle = '#9bd6ff'; cx.font = '12px monospace';
+        cx.fillText('TANQUE', 20, 280);
+        cx.fillStyle = '#1a2433'; cx.fillRect(20, 290, 240, 14);
+        const tankFill = Math.min(1, s.tankPct);
+        cx.fillStyle = tankFill > 0.8 ? '#ffb84a' : '#2ecc71';
+        cx.fillRect(20, 290, 240*tankFill, 14);
+        cx.fillStyle = '#fff'; cx.font = 'bold 12px monospace';
+        cx.fillText(Math.round(tankFill*100) + '%', 270, 302);
+
+        // QR para morador iniciar sessão
+        drawQR(cx, 340, 70, 150, s.qr);
+        cx.fillStyle = '#cfe1ff'; cx.font = 'bold 13px sans-serif';
+        cx.fillText('Escaneie pra ganhar', 340, 240);
+        cx.fillText('pontos no app →', 340, 258);
+
+        // Footer
+        cx.fillStyle = '#0a1218'; cx.fillRect(0, 350, 512, 34);
+        cx.fillStyle = '#5a8aaf'; cx.font = '11px monospace';
+        cx.fillText('SaaS ativo · WiFi ✓ · Cooperativa: ÚLTIMA COLETA 5 dias atrás', 18, 372);
+      } else if(s.mode === 'greet'){
+        cx.fillStyle = '#2ecc71'; cx.fillRect(0,0,512,52);
+        cx.fillStyle = '#062012'; cx.font = 'bold 24px sans-serif';
+        cx.fillText('Olá, ' + s.user + '!', 18, 34);
+        cx.font = 'bold 30px sans-serif'; cx.fillStyle = '#fff';
+        cx.fillText('Insira a garrafa PET', 30, 130);
+        cx.font = '17px sans-serif'; cx.fillStyle = '#cfe1ff';
+        cx.fillText('Você tem ' + s.userPoints + ' pontos acumulados', 30, 162);
+        cx.font = '14px sans-serif'; cx.fillStyle = '#9bd6ff';
+        cx.fillText('= R$ ' + (s.userPoints * 0.05).toFixed(2) + ' em desconto no boleto', 30, 184);
+        // Seta animada apontando pro slot
+        cx.fillStyle = '#2ecc71'; cx.font = 'bold 80px sans-serif';
+        cx.fillText('↓', 230, 320);
+      } else if(s.mode === 'analyze'){
+        cx.fillStyle = '#f39c12'; cx.fillRect(0,0,512,52);
+        cx.fillStyle = '#1a0a0a'; cx.font = 'bold 24px sans-serif';
+        cx.fillText('Analisando...', 18, 34);
+        cx.fillStyle = '#fff'; cx.font = '15px sans-serif';
+        cx.fillText('Câmera: scan PET ✓', 30, 100);
+        cx.fillText('UV (PET fluoresce): confirmado ✓', 30, 130);
+        cx.fillText('Peso: ' + s.weight.toFixed(0) + ' g', 30, 160);
+        // Barra confiança
+        cx.fillStyle = '#1a2433'; cx.fillRect(30, 200, 380, 20);
+        cx.fillStyle = '#f39c12'; cx.fillRect(30, 200, 380*s.conf, 20);
+        cx.fillStyle = '#fff'; cx.font = 'bold 14px monospace';
+        cx.fillText('Confiança: ' + Math.round(s.conf*100) + '%', 30, 240);
+      } else if(s.mode === 'compact'){
+        cx.fillStyle = '#1f5db8'; cx.fillRect(0,0,512,52);
+        cx.fillStyle = '#06122a'; cx.font = 'bold 24px sans-serif';
+        cx.fillText('Compactando garrafa', 18, 34);
+        cx.fillStyle = '#fff'; cx.font = '15px sans-serif';
+        cx.fillText('Motor: 30 RPM', 30, 100);
+        cx.fillText('Pressão: ' + Math.round(s.pressure*100) + ' N', 30, 130);
+        cx.fillText('Redução de volume: ' + Math.round(s.crush*5) + 'x', 30, 160);
+        // Animação visual
+        cx.fillStyle = '#2ecc71'; cx.fillRect(30, 200, 380*s.crush, 22);
+        cx.strokeStyle = '#1a3a55'; cx.strokeRect(30, 200, 380, 22);
+      } else if(s.mode === 'done'){
+        cx.fillStyle = '#2ecc71'; cx.fillRect(0,0,512,52);
+        cx.fillStyle = '#062012'; cx.font = 'bold 24px sans-serif';
+        cx.fillText('Obrigada, ' + s.user + '!', 18, 34);
+        cx.fillStyle = '#fff'; cx.font = 'bold 56px sans-serif';
+        cx.fillText('+10 pontos', 100, 140);
+        cx.font = '17px sans-serif'; cx.fillStyle = '#cfe1ff';
+        /* userPoints já foi incrementado em +10 no update — então aqui mostra o valor já novo */
+        cx.fillText('Total agora: ' + s.userPoints + ' pts', 100, 170);
+        cx.font = '14px sans-serif'; cx.fillStyle = '#9bd6ff';
+        cx.fillText('= R$ ' + (s.userPoints * 0.05).toFixed(2) + ' de desconto disponível', 100, 192);
+
+        cx.fillStyle = '#9bd6ff'; cx.font = '12px monospace';
+        cx.fillText('IMPACTO HOJE NO PRÉDIO', 100, 240);
+        cx.font = 'bold 20px sans-serif'; cx.fillStyle = '#2ecc71';
+        cx.fillText(s.todayBottles + ' garrafas · ' + s.todayKg.toFixed(2) + ' kg', 100, 268);
+      }
+    }
+    draw({mode:'idle', todayBottles:0, todayKg:0, monthBottles:0, co2:0, trees:0, tankPct:0, qr:'ecoplastic://loading'});
+
+    const tex = new THREE.CanvasTexture(c); tex.encoding = THREE.sRGBEncoding;
+    const mat = new THREE.MeshStandardMaterial({map:tex, emissive:0xffffff, emissiveMap:tex, emissiveIntensity:0.55, metalness:0, roughness:0.3});
+    const screen = new THREE.Mesh(new THREE.PlaneGeometry(20, 14.5), mat);
+    screen.position.set(dX, dY, -Dc/2 + 0.08);
+    g.add(screen);
+    tagBom(screen, 'tft'); screen.userData.label = 'Display TFT 2.4" colorido';
+
+    g.userData.draw = draw; g.userData.tex = tex;
+
+    /* Leitor QR (pequena câmera abaixo do display, mesmo painel UI) */
+    const qrY = dY - 13;
+    const qrFrame = box(7, 7, 1.0, MAT.cabinetDark, dX, qrY, -Dc/2 + 0.4);
+    g.add(qrFrame);
+    const qrLens = cyl(1.0, 1.0, 0.6, 16, MAT.cameraLens);
+    qrLens.rotation.x = Math.PI/2; qrLens.position.set(dX, qrY, -Dc/2 - 0.05);
+    g.add(qrLens);
+    tagBom(qrLens, 'qrreader'); qrLens.userData.label = 'Câmera QR (pareamento app)';
+    // 4 LEDs IR
+    for(const o of [[-2.2,-2.2],[2.2,-2.2],[-2.2,2.2],[2.2,2.2]]){
+      const ir = cyl(0.3, 0.3, 0.3, 8, MAT.ledRed);
+      ir.rotation.x = Math.PI/2;
+      ir.position.set(dX + o[0], qrY + o[1], -Dc/2 + 0.1);
+      g.add(ir);
+    }
+
+    return g;
+  }
+
+  /* ============== COMPACTADOR HORIZONTAL (motor + fuso + pistão ao longo do eixo X) ============== */
+  function buildCompactor(cabRef){
+    const g = nm(new THREE.Group(), 'compactor');
+    const tankTopY        = cabRef.userData.tankTopY;
+    const headerY         = cabRef.userData.headerY;
+    const compactorRightX = cabRef.userData.compactorRightX;
+    const divHoleX        = cabRef.userData.divHoleX;
+    const divHoleW        = cabRef.userData.divHoleW;
+
+    const chamberLeftX  = -Wc/2 + 2;          // limite esquerdo interno
+    const chamberRightX = compactorRightX - 1;// limite direito interno (parede divisora)
+    const chamberMidY   = (tankTopY + headerY) / 2;
+    /* IMPORTANTE: o pistão precisa estar na MESMA ALTURA da garrafa pra encostar nela.
+       A garrafa deita sobre o flap em bottleRestY = tankTopY + 3 = 25.
+       Antes, o pistão estava em chamberMidY = 41 — flutuava 16 cm acima e nunca tocava
+       a garrafa. Agora o eixo de compactação fica logo acima do divisor do tanque,
+       cobrindo a parte superior do corpo da garrafa (overlap > 70%). */
+    const bottleRestY = tankTopY + 3;         // = 25
+    const axisY       = bottleRestY + 1;      // = 26 (1 cm acima pra não encostar no divisor)
+    const cz = 0;
+
+    /* Trilhos horizontais (guias) — dois ao longo de X, no plano do pistão */
+    const railLen = chamberRightX - chamberLeftX - 2;
+    const railMidX = (chamberLeftX + chamberRightX)/2;
+    const railF = box(railLen, 0.8, 0.8, MAT.aluBrushed, railMidX, axisY, cz + 6);
+    const railB = box(railLen, 0.8, 0.8, MAT.aluBrushed, railMidX, axisY, cz - 6);
+    g.add(railF); g.add(railB);
+
+    /* Motor DC redutor montado no flanco direito da câmara (eixo horizontal ao longo de X) */
+    const motor = new THREE.Group();
+    const motorBody = cyl(2.4, 2.4, 5, 24, MAT.motorBlue);
+    motorBody.rotation.z = Math.PI/2; // eixo horizontal ao longo de X
+    motor.add(motorBody);
+    const gearbox = box(4, 4, 5, MAT.cabinetDark, 3.5, 0, 0); // caixa redutora
+    motor.add(gearbox);
+    motor.position.set(chamberRightX + 4, axisY, cz - 2);
+    motor.traverse(o=>{ if(o.isMesh){ tagBom(o, 'motor'); o.userData.label='Motor DC 12V com redução 30 RPM (eixo X)'; }});
+    g.add(motor);
+
+    /* Fuso trapezoidal: cilindro horizontal entre o motor e a extremidade esquerda,
+       no nível do pistão (axisY) e levemente atrás (Z = -2) */
+    const screwLen = (chamberRightX + 1) - (chamberLeftX);
+    const screw = cyl(0.6, 0.6, screwLen, 12, MAT.rod);
+    screw.rotation.z = Math.PI/2; // axis along X
+    screw.position.set((chamberLeftX + chamberRightX + 1)/2, axisY, cz - 2);
+    tagBom(screw, 'lead'); screw.userData.label = 'Fuso trapezoidal horizontal';
+    g.add(screw);
+
+    /* Pistão (bloco que se move ao longo de X) — animação modificará position.x.
+       Dimensões dimensionadas pela altura da garrafa (~4.4 cm) com folga. */
+    const piston = new THREE.Group(); piston.name = 'compactor.piston';
+    const pistonBlock = box(3, 5, 11, MAT.piston, 0, 0, 0);
+    piston.add(pistonBlock);
+    /* Cabeça do pistão (face que empurra a garrafa, virada pra esquerda — X negativo) */
+    const pistonHead = box(1.0, 4.5, 10.5, MAT.aluBrushed, -2, 0, 0);
+    piston.add(pistonHead);
+    /* Castanha (no fuso, atrás do pistão) — alinhada com o fuso (Z = -2, mesma altura) */
+    const nut = cyl(1.5, 1.5, 1.6, 12, MAT.metalSilver);
+    nut.rotation.z = Math.PI/2; // along X
+    nut.position.set(2, 0, -2);
+    piston.add(nut);
+    /* Posição inicial: à direita, retraído (próximo ao motor) */
+    const pistonHomeX = chamberRightX - 4;
+    /* Posição de fim de curso: cabeça do pistão encosta na borda direita
+       da garrafa após a compressão (scale.y = 0.2). A cabeça está a -2
+       no espaço local do pistão; o corpo da garrafa amassada se estende
+       até divHoleX + 3.75 * 0.2 a partir do centro de pouso. */
+    const compressedRightEdge = divHoleX + 3.75 * 0.2;
+    const pistonEndX = compressedRightEdge + 2;  // ≈ -7.25
+    piston.position.set(pistonHomeX, axisY, cz);
+    piston.traverse(o=>{ if(o.isMesh){ tagBom(o, 'piston'); o.userData.label='Pistão horizontal (cabeça compactadora)'; }});
+    g.add(piston);
+    g.userData.piston = piston;
+    g.userData.pistonHomeX = pistonHomeX;
+    g.userData.pistonEndX  = pistonEndX;
+    g.userData.pistonAxisY = axisY;
+    /* Borda direita da garrafa cheia (kFactor=1.0): usado pra calcular a posição
+       de "primeiro contato" do pistão na fase 3. */
+    g.userData.fullRightEdge = divHoleX + 3.75;
+
+    /* Chaves fim-de-curso (cilindrinhos de detalhe) — uma em cada extremidade do trilho */
+    const lim1 = cyl(0.4, 0.4, 1.0, 8, MAT.cabinetDark);
+    lim1.rotation.z = Math.PI/2;
+    lim1.position.set(chamberLeftX + 0.5, axisY + 4, cz - 4);
+    tagBom(lim1, 'limit'); lim1.userData.label = 'Fim-de-curso (limite extensão)';
+    g.add(lim1);
+    const lim2 = cyl(0.4, 0.4, 1.0, 8, MAT.cabinetDark);
+    lim2.rotation.z = Math.PI/2;
+    lim2.position.set(chamberRightX - 0.5, axisY + 4, cz - 4);
+    tagBom(lim2, 'limit'); lim2.userData.label = 'Fim-de-curso (limite retração)';
+    g.add(lim2);
+
+    /* Anteparo esquerdo do compactador (anvil) — onde a garrafa é prensada.
+       Centrado no nível da garrafa, alto o suficiente para receber o gargalo. */
+    const anvil = box(0.6, 8, 14, MAT.metalSilver, chamberLeftX + 0.3, axisY, cz);
+    tagBom(anvil, 'cabinet'); anvil.userData.label = 'Anteparo (anvil) — superfície de prensagem';
+    g.add(anvil);
+
+    /* Bandeja basculante no chão da câmara (sobre o buraco do divisor) */
+    const flap = new THREE.Group(); flap.name = 'compactor.flap';
+    /* Pivot na borda traseira (Z = +Dc/2 - 3); placa se estende pra frente */
+    flap.position.set(divHoleX, tankTopY + 0.4, Dc/2 - 3);
+    const flapPlate = box(divHoleW, 0.5, Dc - 6, MAT.cabinetDark, 0, 0, -(Dc - 6)/2);
+    flap.add(flapPlate);
+    g.add(flap);
+    g.userData.flap = flap;
+
+    /* Posições úteis */
+    g.userData.chamberMidY  = chamberMidY;
+    g.userData.chamberLeftX = chamberLeftX;
+    g.userData.chamberRightX= chamberRightX;
+    g.userData.bottleRestX  = divHoleX;          // bottle deita centrada sobre o flap
+    g.userData.bottleRestY  = tankTopY + 3;      // sobre o flap (raio da garrafa)
+
+    return g;
+  }
+
+  /* ============== TANQUE DE ESTOQUE (full width, parte inferior) ============== */
+  function buildTank(cabRef){
+    const g = nm(new THREE.Group(), 'tank');
+    const yBottom = baseY + 1;
+    const yTop    = cabRef.userData.tankTopY - 1;
+    /* Lista de garrafas acumuladas (preenche conforme o ciclo executa) */
+    const tankItems = [];
+    g.userData.tankItems = tankItems;
+    g.userData.yBottom  = yBottom;
+    g.userData.yTop     = yTop;
+    /* Limites X/Z de pouso (deixa folga pras paredes) */
+    g.userData.xMin = -Wc/2 + 4;
+    g.userData.xMax =  Wc/2 - 4;
+    g.userData.zMin = -Dc/2 + 4;
+    g.userData.zMax =  Dc/2 - 4;
+    return g;
+  }
+
+  /* Cria N garrafas amassadas pré-acumuladas no tanque (dão volume inicial visível) */
+  function seedTank(tank, n){
+    for(let i=0; i<n; i++){
+      const b = buildBottle();
+      applyCrush(b, 0.18 + Math.random()*0.08);
+      const x = tank.userData.xMin + Math.random()*(tank.userData.xMax - tank.userData.xMin);
+      const z = tank.userData.zMin + Math.random()*(tank.userData.zMax - tank.userData.zMin);
+      const y = tank.userData.yBottom + 1 + Math.random()*2.5;
+      b.position.set(x, y, z);
+      /* deita a garrafa horizontal — gira em torno de Z (fica no eixo X) */
+      b.rotation.z = Math.PI/2;
+      b.rotation.y = Math.random() * Math.PI * 2;
+      tank.add(b);
+      tank.userData.tankItems.push(b);
+    }
+  }
+
+  /* ============== SENSORES (câmera, UV, ultrassom, célula carga) ============== */
+  function buildSensors(cabRef, compRef){
+    const g = nm(new THREE.Group(), 'sensors');
+    const headerY = cabRef.userData.headerY;
+    const chamberMidY = compRef.userData.chamberMidY;
+    const bottleRestX = compRef.userData.bottleRestX;
+
+    /* Câmera olha pra baixo, montada no teto da câmara, sobre o ponto de pouso da garrafa */
+    const cam = new THREE.Group();
+    const camBody = box(4, 3, 4, MAT.cabinetDark);
+    cam.add(camBody);
+    const lens = cyl(1.2, 1.2, 1.2, 16, MAT.cameraLens);
+    lens.rotation.x = 0; lens.position.y = -2.0; // aponta pra baixo
+    cam.add(lens);
+    cam.position.set(bottleRestX - 4, headerY - 3, 0);
+    cam.traverse(o=>{ if(o.isMesh){ tagBom(o, 'cam'); o.userData.label='Câmera OV2640 (visão computacional)'; }});
+    g.add(cam);
+
+    /* LED UV — também montado no teto, ao lado da câmera */
+    const uv = cyl(0.6, 0.6, 0.6, 16, MAT.ledUV);
+    uv.position.set(bottleRestX + 4, headerY - 3, 0);
+    /* eixo apontando pra baixo (default já é Y) */
+    tagBom(uv, 'uvled'); uv.userData.label = 'LED UV 365nm (PET fluoresce sob UV)';
+    g.add(uv);
+
+    /* Ultrassom no painel frontal — detecta aproximação do morador */
+    const us = new THREE.Group();
+    us.add(box(4.5, 2.0, 0.6, MAT.pcbGreen));
+    const eye1 = cyl(0.85, 0.85, 0.6, 18, MAT.metalSilver); eye1.position.set(-1.4, 0, 0.5); eye1.rotation.x = Math.PI/2; us.add(eye1);
+    const eye2 = cyl(0.85, 0.85, 0.6, 18, MAT.metalSilver); eye2.position.set( 1.4, 0, 0.5); eye2.rotation.x = Math.PI/2; us.add(eye2);
+    us.position.set((cabRef.userData.compactorRightX + Wc/2)/2, chamberMidY + 8, -Dc/2 - 0.3);
+    us.traverse(o=>{ if(o.isMesh){ tagBom(o, 'ultraso'); o.userData.label='HC-SR04 (presença de morador)'; }});
+    g.add(us);
+
+    /* Célula de carga + HX711 (debaixo do tanque, no plinto de fundo) */
+    const lc = box(8, 1.0, 2.0, MAT.metalSilver, -10, baseY + 1.5, 0);
+    tagBom(lc, 'loadcell'); lc.userData.label = 'Célula de carga 5 kg (peso total acumulado)';
+    g.add(lc);
+    const hx = box(2.4, 0.5, 1.6, MAT.pcbGreen, -2, baseY + 1.5, 0);
+    tagBom(hx, 'loadcell'); hx.userData.label = 'HX711 (conversor 24-bit)';
+    g.add(hx);
+
+    return g;
+  }
+
+  /* ============== ESP32 + RELÊ + FONTE (rack atrás do painel UI direito) ============== */
+  function buildElectronics(cabRef){
+    const g = nm(new THREE.Group(), 'electronics');
+    /* Placa ESP32 + relê + fonte montados num "rack" atrás do painel UI direito */
+    const compactorRightX = cabRef.userData.compactorRightX;
+    const rackX = (compactorRightX + Wc/2)/2;     // ~+30
+    const rackZ = Dc/2 - 6;                       // perto da parede traseira
+    const baseRackY = baseY + 22;                 // logo acima do tanque
+
+    /* ESP32 NodeMCU */
+    const esp32 = box(5, 0.4, 2.8, MAT.pcbGreen, rackX, baseRackY + 18, rackZ);
+    tagBom(esp32, 'esp32'); esp32.userData.label = 'ESP32 NodeMCU (controle + WiFi)';
+    g.add(esp32);
+    g.add(box(1.0, 0.6, 0.8, MAT.chipBlack, rackX - 1.5, baseRackY + 18.4, rackZ));
+
+    /* Relê 2 canais */
+    const relay = box(5.5, 1.4, 4, paintMat(0x1a4a8a), rackX, baseRackY + 12, rackZ);
+    tagBom(relay, 'relay'); relay.userData.label = 'Módulo relê 2 canais (aciona motor)';
+    g.add(relay);
+    g.add(box(1.0, 0.5, 1.0, paintMat(0xcc6644), rackX - 1.4, baseRackY + 13, rackZ));
+    g.add(box(1.0, 0.5, 1.0, paintMat(0xcc6644), rackX + 1.4, baseRackY + 13, rackZ));
+
+    /* Fonte 12V */
+    const psu = box(7, 4, 5, paintMat(0x1a1a1d), rackX, baseRackY + 4, rackZ);
+    tagBom(psu, 'psu'); psu.userData.label = 'Fonte 12V 5A + step-down 5V';
+    g.add(psu);
+
+    /* Buzzer + LED RGB */
+    const buz = cyl(1.0, 1.0, 0.8, 16, MAT.chipBlack);
+    buz.position.set(rackX - 5, baseRackY + 18, rackZ);
+    tagBom(buz, 'buzzer'); buz.userData.label = 'Buzzer + LED RGB (feedback)';
+    g.add(buz);
+
+    return g;
+  }
+
+  /* ============== ITEM (garrafa PET) ==============
+     IMPORTANTE: cada garrafa CLONA seus próprios materiais. Antes, MAT.petBottle era
+     compartilhado entre todas as garrafas — uma garrafa amassada acabava trocando o
+     material de referência da próxima também. Agora cada instância tem o seu. */
+  function buildBottle(){
+    const g = new THREE.Group();
+    /* Materiais clonados (instância única por garrafa) */
+    const bodyMat = MAT.petBottle.clone();
+    const capMat  = paintMat(0x1f5db8); // paintMat já cria novo material a cada chamada
+
+    /* Corpo */
+    const body = cyl(2.0, 2.2, 7.5, 18, bodyMat);
+    body.userData.role = 'body';
+    g.add(body);
+    /* Gargalo (mesmo material do corpo) */
+    const neck = cyl(1.0, 1.5, 1.3, 14, bodyMat);
+    neck.position.y = 4.4; neck.userData.role = 'body';
+    g.add(neck);
+    /* Tampa */
+    const cap = cyl(1.1, 1.1, 0.6, 14, capMat);
+    cap.position.y = 5.4; cap.userData.role = 'cap';
+    g.add(cap);
+
+    g.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; }});
+    g.userData.bodyMat    = bodyMat;
+    g.userData.capMat     = capMat;
+    g.userData.crushFactor = 1.0; // 1 = inteira, 0.2 = bem amassada
+    return g;
+  }
+
+  /* Aplica deformação na garrafa: escala Y conforme crushFactor + muda aparência
+     dos materiais CLONADOS desta garrafa (corpo e tampa). Não toca em MAT.* globais. */
+  function applyCrush(bottle, factor){
+    if(!bottle) return; // guarda defensiva — fase 3 chama isso a cada frame
+    bottle.userData.crushFactor = factor;
+    bottle.scale.y = factor;
+    if(factor >= 1) return;
+
+    const body = bottle.userData.bodyMat;
+    if(body){
+      /* Corpo: vira opaco, mais fosco e com a cor do petCrushed */
+      body.color.setHex(0xb8d8e8);
+      body.roughness = 0.42;
+      body.opacity   = 0.78;
+      body.transparent = true;
+      body.needsUpdate = true;
+    }
+    const cap = bottle.userData.capMat;
+    if(cap){
+      /* Tampa: também é amassada — escurece e ganha um pouco de fosco */
+      cap.color.setHex(0x12365e);
+      cap.roughness = 0.85;
+      cap.metalness = 0.05;
+      cap.needsUpdate = true;
+    }
+  }
+
+  /* ============== MONTAGEM ============== */
+  const bin = new THREE.Group(); bin.name='bin';
+  const castors    = buildCastors();              bin.add(castors);
+  const cabinet    = buildCabinet();              bin.add(cabinet);
+  const inlet      = buildInlet(cabinet);         bin.add(inlet);
+  const display    = buildDisplay(cabinet);       bin.add(display);
+  const compactor  = buildCompactor(cabinet);     bin.add(compactor);
+  const tank       = buildTank(cabinet);          bin.add(tank);
+  const sensors    = buildSensors(cabinet, compactor); bin.add(sensors);
+  const electronics= buildElectronics(cabinet);   bin.add(electronics);
+  scene.add(bin);
+
+  /* Pré-popula o tanque com algumas garrafas amassadas pra dar ideia de uso real */
+  seedTank(tank, 18);
+
+  function setLabel(obj, label){ obj.userData = obj.userData || {}; obj.userData.label = label }
+  setLabel(castors, 'Rodízios industriais');
+  setLabel(cabinet, 'Gabinete EcoPlastic');
+  setLabel(inlet, 'Slot só-PET (servo-acionado)');
+  setLabel(display, 'Display + leitor QR (interface morador)');
+  setLabel(compactor, 'Compactador (motor + fuso + pistão)');
+  setLabel(tank, 'Tanque de estoque (visível por acrílico)');
+  setLabel(sensors, 'Sensores (câmera, UV, ultrassom, balança)');
+  setLabel(electronics, 'Eletrônica (ESP32, relê, fonte)');
+
+  /* ============ HOVER + REALCE BIDIRECIONAL ============ */
+  const raycaster = new THREE.Raycaster();
+  const pointer = new THREE.Vector2();
+  let hoverEnabled = true;
+  const annotEl = document.getElementById('annot');
+
+  function findUserData(obj, prop){
+    while(obj){ if(obj.userData && obj.userData[prop] !== undefined){ return obj.userData[prop] } obj = obj.parent }
+    return null;
+  }
+
+  function onPointerMove(e){
+    pointer.x = (e.clientX / W()) * 2 - 1;
+    pointer.y = -(e.clientY / H()) * 2 + 1;
+    if(!hoverEnabled){ annotEl.classList.remove('show'); clearHL(); return }
+    raycaster.setFromCamera(pointer, camera);
+    const hits = raycaster.intersectObjects(bin.children, true);
+    if(hits.length){
+      const obj = hits[0].object;
+      const label = findUserData(obj, 'label');
+      const bomKey = findUserData(obj, 'bomKey');
+      if(label){
+        annotEl.textContent = label;
+        annotEl.style.left = e.clientX + 'px'; annotEl.style.top = e.clientY + 'px';
+        annotEl.classList.add('show');
+      } else annotEl.classList.remove('show');
+      if(bomKey){
+        highlightBom(bomKey);
+        const row = document.querySelector('.bm-row[data-key="'+bomKey+'"]');
+        if(row) row.classList.add('hl');
+      } else clearHL();
+    } else { annotEl.classList.remove('show'); clearHL(); }
+  }
+  renderer.domElement.addEventListener('pointermove', onPointerMove);
+
+  let hlMeshes = [];
+  function highlightBom(key){
+    if(hlMeshes.length){ clearHL(); }
+    const arr = BOM_MESHES[key];
+    if(!arr) return;
+    for(const m of arr){
+      if(!m.isMesh || !m.material) continue;
+      m.userData._hlSaved = m.userData._hlSaved || {
+        emissive: m.material.emissive ? m.material.emissive.clone() : null,
+        emissiveIntensity: m.material.emissiveIntensity || 0
+      };
+      if(m.material.emissive){
+        m.material.emissive.setHex(0x2ecc71);
+        m.material.emissiveIntensity = 0.55;
+        m.material.needsUpdate = true;
+      }
+      hlMeshes.push(m);
+    }
+  }
+  function clearHL(){
+    for(const m of hlMeshes){
+      if(m.userData._hlSaved && m.material && m.material.emissive){
+        m.material.emissive.copy(m.userData._hlSaved.emissive);
+        m.material.emissiveIntensity = m.userData._hlSaved.emissiveIntensity;
+        m.material.needsUpdate = true;
+      }
+    }
+    hlMeshes.length = 0;
+    document.querySelectorAll('.bm-row.hl').forEach(r => r.classList.remove('hl'));
+  }
+
+  /* ============ X-RAY + EXPLODED ============ */
+  function setXray(on){
+    const mats = [MAT.cabinetWhite, MAT.cabinetGreen];
+    for(const m of mats){
+      m.transparent = on; m.opacity = on ? 0.18 : 1.0;
+      m.depthWrite = !on; m.needsUpdate = true;
+    }
+  }
+  function setExploded(on){
+    /* O cabinet fica fixo (era no-op antes — removido).
+       Os outros módulos sobem em Y pra revelar o interior. */
+    if(on){
+      compactor.position.y   = 14;
+      sensors.position.y     = 22;
+      display.position.y     = 10;
+      electronics.position.y = 6;
+      inlet.position.y       = 30;
+      tank.position.y        = -6;
+    } else {
+      compactor.position.y   = 0;
+      sensors.position.y     = 0;
+      display.position.y     = 0;
+      electronics.position.y = 0;
+      inlet.position.y       = 0;
+      tank.position.y        = 0;
+    }
+  }
+
+  /* ============ STATS GLOBAIS (simulação) ============ */
+  const stats = {
+    user: 'Maria',
+    userPoints: 47,
+    todayBottles: 38,
+    todayKg: 0.95,
+    monthBottles: 1240,
+    co2: 28,
+    trees: 4,
+    tankPct: 0.42,
+    qr: 'ecoplastic://join/' + Math.random().toString(36).slice(2,8).toUpperCase()
+  };
+  function pushDisplayState(mode, extra){
+    if(!display.userData.draw) return;
+    const s = Object.assign({mode:mode}, stats, extra || {});
+    display.userData.draw(s);
+    display.userData.tex.needsUpdate = true;
+  }
+  pushDisplayState('idle');
+
+  /* ============ ANIMAÇÃO DO CICLO (HORIZONTAL) ============ */
+  const anim = {
+    active:false, t:0,
+    bottle:null,
+    statsApplied:false,
+    bottleDropZ: 0   // pequena variação aleatória na queda (Z)
+  };
+  function lerp(a,b,t){ return a + (b - a) * Math.min(1, Math.max(0, t)) }
+  function smooth(t){ return t<0?0:t>1?1: t*t*(3-2*t) }
+
+  function setStatus(title, detail, color){
+    document.getElementById('status-title').textContent = title;
+    document.getElementById('status-detail').textContent = detail;
+    document.getElementById('status-led').style.background = color || '#2ecc71';
+    document.getElementById('status-led').style.boxShadow  = '0 0 8px ' + (color || '#2ecc71');
+  }
+
+  /* Fases:
+      0 saudação        : display cumprimenta morador
+      1 fall            : garrafa entra pelo slot do topo, deita na câmara
+      2 analyze         : câmera + UV + balança
+      3 compact         : pistão HORIZONTAL avança, garrafa amassa
+      4 drop            : pistão recua, flap abre, garrafa cai no tanque
+      5 done            : display agradece, contadores sobem, garrafa entra no acúmulo */
+  const T = { greet:0.6, fall:1.0, analyze:1.8, compact:1.8, drop:1.0, done:1.5 };
+
+  /* Reseta TODO o estado físico/visual da animação para o ponto inicial.
+     Antes, stopCycle só removia a garrafa e abaixava o pistão em Y; agora reseta
+     statsApplied, posição/rotação do pistão, rotação do flap, intensidade do UV. */
+  function resetAnimState(){
+    anim.active = false;
+    anim.t = 0;
+    anim.statsApplied = false;
+    anim.bottleDropZ = 0;
+    if(anim.bottle){ bin.remove(anim.bottle); anim.bottle = null; }
+    /* Pistão volta pra posição home (X horizontal) — Y fica no eixo da garrafa */
+    compactor.userData.piston.position.x = compactor.userData.pistonHomeX;
+    compactor.userData.piston.position.y = compactor.userData.pistonAxisY;
+    compactor.userData.piston.position.z = 0;
+    /* Flap fecha */
+    compactor.userData.flap.rotation.x = 0;
+    /* UV volta à intensidade base */
+    MAT.ledUV.emissiveIntensity = 1.6;
+  }
+
+  function startCycle(){
+    if(anim.active) return;
+    /* Garante estado limpo antes de começar (importante se o usuário clicou
+       Simular sem ter parado um ciclo anterior travado por qualquer motivo) */
+    resetAnimState();
+
+    /* Monta a garrafa COMPLETAMENTE antes de marcar anim.active = true.
+       Antes a ordem era: anim.active=true → anim.bottle=buildBottle().
+       Se buildBottle ou bin.add lançasse qualquer erro, o tick seguinte
+       entraria no update() com anim.active=true mas anim.bottle=null,
+       crashando em anim.bottle.position.set(...). */
+    const newBottle = buildBottle();
+    const slotY = inlet.userData.slotY;
+    const slotX = inlet.userData.slotCenterX;
+    newBottle.position.set(slotX, slotY + 18, 0);
+    newBottle.rotation.set(0, 0, 0);
+    bin.add(newBottle);
+    anim.bottle = newBottle;
+    anim.bottleDropZ = (Math.random() - 0.5) * 4;
+    anim.active = true; // só agora ativa o tick
+
+    setStatus('Sessão iniciada','QR escaneado · morador identificado', '#2ecc71');
+    pushDisplayState('greet', {});
+  }
+  function stopCycle(){
+    resetAnimState();
+    setStatus('Pronto', 'Toque "Simular descarte" para ver o ciclo', '#2ecc71');
+    pushDisplayState('idle');
+  }
+
+  function update(dt){
+    if(!anim.active) return;
+    anim.t += dt;
+    let t = anim.t;
+
+    /* BUG FIX: Quando a fase 5 move a garrafa pro tanque, anim.bottle vira null
+       MAS anim.active fica true por mais ~1.5 s (T.done) pra mostrar o display 'done'.
+       Nessas frames seguintes, a sequência de if-return das fases 0..4 NÃO retorna
+       (porque o tempo já passou de cada fase) e o código chega em
+       `anim.bottle.position.set(...)` com bottle null → crash.
+       Solução: quando bottle é null, pulamos toda a lógica das fases 1-4 e tratamos
+       só o display 'done' + fim de ciclo. */
+    if(!anim.bottle){
+      const phase5End = T.greet + T.fall + T.analyze + T.compact + T.drop + T.done;
+      if(anim.statsApplied && t < phase5End){
+        /* ainda na janela de 1,5 s do display 'done' */
+        pushDisplayState('done', {});
+        setStatus('Concluído', '+10 pontos creditados ao morador · evento → app', '#2ecc71');
+        return;
+      }
+      /* Fim de ciclo (ou estado inconsistente: bottle null sem statsApplied) — limpa tudo */
+      anim.active = false;
+      anim.statsApplied = false;
+      anim.t = 0;
+      setStatus('Pronto', 'Toque "Simular descarte" para um novo morador', '#2ecc71');
+      stats.qr = 'ecoplastic://join/' + Math.random().toString(36).slice(2,8).toUpperCase();
+      pushDisplayState('idle');
+      return;
+    }
+
+    /* Atalhos pra coordenadas do layout horizontal */
+    const slotY      = inlet.userData.slotY;
+    const slotX      = inlet.userData.slotCenterX;
+    const restX      = compactor.userData.bottleRestX;
+    const restY      = compactor.userData.bottleRestY;
+    const pistonHomeX= compactor.userData.pistonHomeX;
+    const pistonEndX = compactor.userData.pistonEndX;
+
+    /* PHASE 0 — saudação */
+    if(t < T.greet) return;
+    t -= T.greet;
+
+    /* PHASE 1 — garrafa entra pelo slot, deita na câmara
+       Sub-fase a: cai vertical até o slot
+       Sub-fase b: continua caindo, gira 90° (deita), pousa em (restX, restY) */
+    if(t < T.fall){
+      const k = smooth(t / T.fall);
+      if(k < 0.35){
+        const k2 = k / 0.35;
+        anim.bottle.position.x = slotX;
+        anim.bottle.position.y = lerp(slotY + 18, slotY, k2);
+        anim.bottle.position.z = 0;
+        anim.bottle.rotation.set(0, 0, 0);
+      } else {
+        const k2 = (k - 0.35) / 0.65;
+        anim.bottle.position.x = lerp(slotX, restX, k2);
+        anim.bottle.position.y = lerp(slotY, restY, k2);
+        anim.bottle.position.z = 0;
+        /* Rotaciona em torno de Z pra deitar (eixo da garrafa fica ao longo de X) */
+        anim.bottle.rotation.set(0, 0, lerp(0, Math.PI/2, k2));
+      }
+      return;
+    }
+    t -= T.fall;
+    /* Não resetamos position/rotation aqui: a fase 1 termina exatamente em
+       (restX, restY, 0) com rotação Z = π/2 no último frame.
+       Resetar todo frame causava (a) teleporte visual nas fases 4 e 5
+       e (b) crash no frame seguinte ao bottle ser movido pro tanque. */
+
+    /* PHASE 2 — análise (UV pisca, câmera ativa, peso) */
+    if(t < T.analyze){
+      const k = smooth(t / T.analyze);
+      const conf = k * 0.97;
+      const uvIntensity = 1.6 + Math.sin(t * 12) * 0.6;
+      MAT.ledUV.emissiveIntensity = uvIntensity;
+      pushDisplayState('analyze', {weight: 28 + k*4, conf: conf});
+      /* Garrafa balança levemente */
+      anim.bottle.position.y = restY + Math.sin(t*8) * 0.12;
+      if(t > T.analyze * 0.5){
+        setStatus('PET confirmado', 'UV: fluorescência detectada · balança: 32g', '#f39c12');
+      }
+      return;
+    }
+    t -= T.analyze;
+    MAT.ledUV.emissiveIntensity = 1.6;
+    /* (Não resetamos bottle.position.y aqui — phase 2 termina muito perto de restY
+       e phase 4 sobrescreve quando começa a queda; resetar aqui teleportava a garrafa
+       a cada frame durante phase 3-4-5.) */
+
+    /* PHASE 3 — compactação HORIZONTAL.
+       Bug anterior: o pistão fazia lerp do home até pistonEndX em paralelo com
+       o crushFactor — isso fazia o pistão "flutuar" na frente da garrafa sem
+       encostar até o último frame. Agora a fase tem duas sub-fases:
+       3a (k<0.3): pistão se aproxima até a borda direita da garrafa cheia (sem amassar)
+       3b (k>=0.3): pistão e borda direita da garrafa avançam JUNTOS — a posição do pistão
+                    é derivada do crushFactor pra garantir contato visual contínuo. */
+    if(t < T.compact){
+      const k = smooth(t / T.compact);
+      const fullRightEdge = compactor.userData.fullRightEdge; // garrafa cheia
+      const contactPistonX = fullRightEdge + 2;               // pistão em primeiro contato
+
+      if(k < 0.3){
+        const k2 = k / 0.3;
+        compactor.userData.piston.position.x = lerp(pistonHomeX, contactPistonX, k2);
+        /* sem amassar ainda */
+      } else {
+        const k2 = (k - 0.3) / 0.7;
+        const crushFactor = lerp(1.0, 0.2, k2);
+        applyCrush(anim.bottle, crushFactor);
+        /* Posição do pistão DERIVADA da borda direita da garrafa amassada:
+           cabeça (offset -2) sempre encosta na borda direita do corpo (restX + 3.75 * factor) */
+        const bottleRightEdge = restX + 3.75 * crushFactor;
+        compactor.userData.piston.position.x = bottleRightEdge + 2;
+        /* A garrafa "afunda" um pouquinho contra o flap conforme amassa */
+        anim.bottle.position.y = restY - (1 - crushFactor) * 0.6;
+      }
+      pushDisplayState('compact', {pressure: k, crush: k});
+      if(t > T.compact * 0.5){
+        setStatus('Compactando', '5× redução de volume · pistão horizontal ativo', '#1f5db8');
+      }
+      return;
+    }
+    t -= T.compact;
+    compactor.userData.piston.position.x = pistonEndX;
+
+    /* PHASE 4 — pistão recua, flap abre pra baixo, garrafa cai no tanque */
+    if(t < T.drop){
+      const k = smooth(t / T.drop);
+      /* Pistão volta pro home */
+      compactor.userData.piston.position.x = lerp(pistonEndX, pistonHomeX, k);
+      /* Flap inclina pra baixo (pivot na borda traseira) */
+      compactor.userData.flap.rotation.x = -k * Math.PI * 0.45;
+      /* Garrafa cai pro tanque (gravidade fake k²) */
+      const startY = restY - 0.6;
+      const endY   = baseY + 1.5 + Math.random() * 1.5;
+      anim.bottle.position.y = lerp(startY, endY, k * k);
+      anim.bottle.position.z = lerp(0, anim.bottleDropZ, k);
+      anim.bottle.rotation.y += dt * 3.0;
+      anim.bottle.rotation.x += dt * 0.6;
+      return;
+    }
+    t -= T.drop;
+    compactor.userData.piston.position.x = pistonHomeX;
+    compactor.userData.flap.rotation.x = 0;
+
+    /* PHASE 5 — display agradece + atualiza contadores + acumula no tanque */
+    if(t < T.done){
+      if(!anim.statsApplied){
+        anim.statsApplied = true;
+        stats.todayBottles += 1;
+        stats.monthBottles += 1;
+        stats.todayKg += 0.025;
+        stats.tankPct = Math.min(1, stats.tankPct + 0.004);
+        stats.co2 = Math.round(stats.monthBottles * 0.022);
+        stats.trees = Math.round(stats.co2 / 7);
+        /* Bug anterior: stats.userPoints nunca subia, então o display 'done' sempre
+           mostrava 47 → 57 a cada ciclo. Agora o saldo sobe de verdade. */
+        stats.userPoints += 10;
+        /* Move a garrafa amassada para o GRUPO TANK (acumula visualmente lá).
+           Antes, só ficávamos com a referência em anim.crushed e a próxima
+           garrafa apagava a anterior. Agora elas se acumulam de verdade. */
+        if(anim.bottle){
+          const b = anim.bottle;
+          /* tank é filho de bin, ambos sem transformação aplicada,
+             então as coordenadas locais permanecem corretas */
+          bin.remove(b);
+          tank.add(b);
+          tank.userData.tankItems.push(b);
+          anim.bottle = null;
+        }
+      }
+      pushDisplayState('done', {});
+      setStatus('Concluído', '+10 pontos creditados ao morador · evento → app', '#2ecc71');
+      return;
+    }
+
+    /* fim do ciclo — volta ao idle */
+    anim.active = false;
+    anim.statsApplied = false;
+    anim.t = 0;
+    setStatus('Pronto', 'Toque "Simular descarte" para um novo morador', '#2ecc71');
+    /* roda o token do QR */
+    stats.qr = 'ecoplastic://join/' + Math.random().toString(36).slice(2,8).toUpperCase();
+    pushDisplayState('idle');
+  }
+
+  /* ============ UI BINDINGS ============ */
+  document.querySelectorAll('[data-demo]').forEach(b=>{
+    b.addEventListener('click', ()=> startCycle());
+  });
+  document.getElementById('btn-stop').addEventListener('click', stopCycle);
+  function bindToggle(id, onChange){
+    const el = document.getElementById(id);
+    el.addEventListener('click', ()=>{
+      const on = el.getAttribute('data-on') !== 'true';
+      el.setAttribute('data-on', String(on)); onChange(on);
+    });
+  }
+  bindToggle('t-xray', setXray);
+  bindToggle('t-explode', setExploded);
+  bindToggle('t-annotations', on => { hoverEnabled = on; if(!on){ annotEl.classList.remove('show'); clearHL(); } });
+  bindToggle('t-rotate', on => { orbit.state.autoRotate = on });
+  document.querySelectorAll('[data-view]').forEach(b=>{
+    b.addEventListener('click', ()=> orbit.setView(b.getAttribute('data-view')));
+  });
+
+  /* ============ Painel inferior — Modelo de negócio + BOM ============ */
+  function renderBM(tab){
+    const body = document.getElementById('bm-body');
+    body.innerHTML = '';
+    if(tab === 'business'){
+      const intro = document.createElement('div');
+      intro.style.cssText = 'font-size:11.5px;color:var(--muted);line-height:1.5;padding:0 0 8px';
+      intro.innerHTML = 'Três fluxos de receita combinados — o segredo é fugir da venda única e construir <b style="color:var(--brand)">receita recorrente</b>:';
+      body.appendChild(intro);
+      for(const s of STREAMS){
+        const div = document.createElement('div');
+        div.className = 'stream';
+        div.innerHTML =
+          '<div class="t">' + s.title + '<b>' + s.headline + '</b></div>' +
+          '<div class="d">' + s.detail + '</div>';
+        body.appendChild(div);
+      }
+      const calc = document.createElement('div');
+      calc.style.cssText = 'margin-top:14px;padding:10px;background:#102b20;border:1px solid #1f4d3e;border-radius:8px;font-size:11.5px;line-height:1.5';
+      calc.innerHTML =
+        '<b style="color:var(--brand)">Projeção realista — 50 unidades em 2 anos:</b><br>' +
+        '• 50 × R$ 2.500 (hardware) = R$ 125.000 (ano 1, único)<br>' +
+        '• 50 × R$ 199 × 12 meses = <b>R$ 119.400/ano recorrente</b><br>' +
+        '• Revenue share PET (5 ton/mês × 50 unid × R$ 0,75) = <b>R$ 22.500/mês ≈ R$ 270.000/ano</b><br>' +
+        '<b style="color:var(--brand)">Total ano 2+: ~R$ 389.400/ano sem vender mais nada</b>';
+      body.appendChild(calc);
+      document.getElementById('bm-total').innerHTML = '<span>Receita recorrente projetada</span><span>~R$ 389.400 / ano</span>';
+    } else {
+      // BOM
+      const cats = ['electronic', 'structural'];
+      const labels = {electronic:'Eletrônica', structural:'Estrutura'};
+      for(const cat of cats){
+        const h = document.createElement('h4');
+        h.textContent = labels[cat];
+        body.appendChild(h);
+        const items = BOM.filter(it => it.cat === cat);
+        for(const it of items){
+          const row = document.createElement('div');
+          row.className = 'bm-row'; row.setAttribute('data-key', it.key);
+          const subtotal = it.qty * it.unit;
+          const ic = it.cat === 'electronic' ? '⚡' : '⌂';
+          row.innerHTML =
+            '<div class="ic">' + ic + '</div>' +
+            '<div class="nm">' + it.name + '<small>' + it.note + '</small></div>' +
+            '<div class="qt">' + it.qty + '×</div>' +
+            '<div class="pr">R$ ' + subtotal.toFixed(0) + '</div>';
+          row.addEventListener('mouseenter', ()=> highlightBom(it.key));
+          row.addEventListener('mouseleave', ()=> clearHL());
+          body.appendChild(row);
+        }
+      }
+      document.getElementById('bm-total').innerHTML = '<span>Custo total do protótipo<br><small>Versão industrial: ~R$ 3.500</small></span><span>R$ ' + BOM_TOTAL.toFixed(0).replace('.', ',') + '</span>';
+    }
+  }
+  document.querySelectorAll('.bm .tab').forEach(tab=>{
+    tab.addEventListener('click', ()=>{
+      document.querySelectorAll('.bm .tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      renderBM(tab.getAttribute('data-bm'));
+    });
+  });
+  renderBM('business');
+
+  /* ============ LOOP ============ */
+  const clock = new THREE.Clock();
+  function tick(){
+    const dt = Math.min(0.05, clock.getDelta());
+    orbit.update();
+    update(dt);
+    renderer.render(scene, camera);
+    requestAnimationFrame(tick);
+  }
+  function onResize(){
+    camera.aspect = W()/H(); camera.updateProjectionMatrix();
+    renderer.setSize(W(), H());
+  }
+  window.addEventListener('resize', onResize);
+
+  setStatus('Pronto', 'Toque "Simular descarte" para ver o ciclo', '#2ecc71');
+  tick();
+  </script>
+</body>
+</html>

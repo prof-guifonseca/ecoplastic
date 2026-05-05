@@ -1,0 +1,21 @@
+[build]
+  publish = "."
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# JS modules need correct MIME (Netlify serves correctly by default, but be explicit)
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Content-Type = "application/javascript; charset=utf-8"
+
+# Allow direct access to /prototipo/ (single-page app inside its own folder)
+[[redirects]]
+  from = "/prototipo"
+  to   = "/prototipo/"
+  status = 301

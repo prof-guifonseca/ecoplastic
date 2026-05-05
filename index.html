@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EcoPlastic — Recycle-as-a-Service</title>
+  <meta name="description" content="Compactador inteligente de PET para condomínios + plataforma SaaS de gestão e ESG." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ctext y='20' font-size='22'%3E♻️%3C/text%3E%3C/svg%3E" />
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+      background:
+        radial-gradient(900px 500px at 15% -10%, rgba(46,204,113,.15), transparent 60%),
+        radial-gradient(700px 400px at 110% 110%, rgba(243,156,18,.12), transparent 60%),
+        #0a1218;
+      color:#e8ecf2;
+      min-height:100vh;
+      display:grid;place-items:center;
+      padding:32px;
+    }
+    .wrap{max-width:880px;width:100%}
+    .brand{display:flex;align-items:center;gap:14px;margin-bottom:8px}
+    .logo{
+      width:52px;height:52px;border-radius:14px;
+      background:linear-gradient(135deg,#2ecc71,#1abc9c);
+      display:grid;place-items:center;font-size:28px;
+    }
+    h1{font-size:32px;letter-spacing:-.5px}
+    .sub{color:#8a9aa8;font-size:15px;margin:0 0 32px}
+    .lead{
+      background:linear-gradient(135deg,rgba(46,204,113,.10),rgba(243,156,18,.06));
+      border:1px solid rgba(46,204,113,.25);
+      border-radius:14px;padding:20px;margin-bottom:24px;color:#cfd6df;
+    }
+    .lead b{color:#fff}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    .card{
+      background:#0f1923;border:1px solid #1d3349;border-radius:14px;
+      padding:22px;text-decoration:none;color:inherit;
+      transition:.2s;display:flex;flex-direction:column;gap:6px;
+    }
+    .card:hover{border-color:#2ecc71;transform:translateY(-3px);box-shadow:0 12px 30px rgba(0,0,0,.35)}
+    .card .ico{font-size:30px;margin-bottom:6px}
+    .card h3{font-size:16px;color:#fff}
+    .card p{color:#8a9aa8;font-size:13px;line-height:1.5}
+    .card .pill{margin-top:auto;font-size:11px;color:#74e3a4;background:rgba(46,204,113,.10);
+      border:1px solid rgba(46,204,113,.30);border-radius:99px;padding:4px 10px;width:fit-content}
+    .card.proto{border-color:rgba(46,204,113,.4);background:linear-gradient(180deg,#0f1923,rgba(46,204,113,.06))}
+    footer{margin-top:32px;color:#5e6f80;font-size:12px;text-align:center}
+    @media (max-width:720px){.grid{grid-template-columns:1fr}h1{font-size:24px}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand">
+      <div class="logo">♻️</div>
+      <div>
+        <h1>EcoPlastic</h1>
+        <div class="sub">Recycle-as-a-Service · compactador + plataforma SaaS para condomínios</div>
+      </div>
+    </div>
+
+    <div class="lead">
+      Transforma o lixo do prédio em <b>receita</b>. A máquina compacta 5× cada garrafa, o app gera pontos para os moradores e o relatório ESG mensal vira material de marketing do prédio. Aqui você pode explorar três peças do projeto:
+    </div>
+
+    <div class="grid">
+      <a class="card" href="./ecoplastic.html">
+        <div class="ico">📑</div>
+        <h3>Apresentação</h3>
+        <p>Modelo de negócio, BOM da máquina e renderização 3D interativa do compactador.</p>
+        <span class="pill">Pitch + viabilidade</span>
+      </a>
+      <a class="card" href="./ecoplastic-app.html">
+        <div class="ico">📱</div>
+        <h3>Mockup do app</h3>
+        <p>Visão estática das telas do síndico e do morador — design language e fluxo.</p>
+        <span class="pill">UI · primeiro contato</span>
+      </a>
+      <a class="card proto" href="./prototipo/">
+        <div class="ico">⚡</div>
+        <h3>Protótipo navegável</h3>
+        <p>SPA funcional: solicitar coletas, simular depósitos, gerar PDF do ESG, resgatar recompensas — tudo persistido.</p>
+        <span class="pill">Demo end-to-end</span>
+      </a>
+    </div>
+
+    <footer>EcoPlastic · protótipo de pesquisa · 2026</footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,24 @@
+# Editor / OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local node modules (we don't use them but just in case)
+node_modules/
+.cache/
+
+# Local Netlify artifacts
+.netlify/
+
+# Local Claude state
+.claude/launch.json
+plans/
