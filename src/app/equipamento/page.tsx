@@ -16,10 +16,10 @@ const EquipmentViewer = dynamic(() => import('@/components/equipment/equipment-v
 export default function EquipamentoPage() {
   return (
     <main className="equipment-page">
-      <Link className="btn ghost" href="/" style={{ marginBottom: 18 }}><ArrowLeft size={16} /> Voltar</Link>
+      <Link className="btn ghost mb-4" href="/"><ArrowLeft size={16} /> Voltar</Link>
       <section className="equipment-hero">
         <div>
-          <p style={{ color: 'var(--c-accent)', fontWeight: 850, textTransform: 'uppercase', letterSpacing: '.08em' }}>
+          <p className="eyebrow-brand">
             Compactador inteligente de PET
           </p>
           <h1>{BRAND.name} Station</h1>

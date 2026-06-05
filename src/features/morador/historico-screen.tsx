@@ -1,6 +1,7 @@
 'use client';
 
 import { EmptyState } from '@/components/ui/primitives';
+import { feedIcon } from '@/components/ui/icons';
 import { dt, time } from '@/domain/format';
 import { moradorAtual, transacoesDoMorador } from '@/domain/selectors';
 import { useEcoPlastic } from '@/store/ecoplastic-store';
@@ -28,7 +29,7 @@ export function HistoricoMoradorScreen() {
               const recompensa = state.recompensas.find((item) => item.id === transacao.recompensaId);
               return (
                 <div className="p-feed-item" key={transacao.id}>
-                  <div className="ico">{transacao.tipo === 'deposito' ? '♻' : '🎁'}</div>
+                  <div className="ico">{feedIcon(transacao.tipo)}</div>
                   <div>
                     <div className="ttl">{transacao.tipo === 'deposito' ? `${transacao.kg} kg PET` : recompensa?.titulo ?? 'Resgate'}</div>
                     <div className="meta">{time(transacao.ts)}</div>

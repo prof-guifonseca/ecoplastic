@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { BarChart3, CalendarCheck, ClipboardList, FileText, Home, LogOut, Settings, Users, WalletCards } from 'lucide-react';
+import { BarChart3, CalendarCheck, ClipboardList, FileText, Home, LogOut, Recycle, Settings, Users, WalletCards } from 'lucide-react';
 import { BRAND } from '@/domain/brand';
 import { useEcoPlastic } from '@/store/ecoplastic-store';
 import { useToast } from './toast';
@@ -24,9 +24,10 @@ export function SindicoShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="admin-shell">
+      <a className="skip-link" href="#conteudo">Pular para o conteudo</a>
       <aside className="sidebar">
         <Link className="brand-row" href="/">
-          <div className="logo">♻</div>
+          <div className="logo"><Recycle size={22} /></div>
           <div>
             <h2>{BRAND.name}</h2>
             <small>{state.condominio.nome}</small>
@@ -68,7 +69,7 @@ export function SindicoShell({ children }: { children: React.ReactNode }) {
           {lastStorageMessage ? <small className="storage-note">{lastStorageMessage}</small> : null}
         </div>
       </aside>
-      <main className="admin-main">{children}</main>
+      <main className="admin-main" id="conteudo">{children}</main>
     </div>
   );
 }

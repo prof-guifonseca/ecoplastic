@@ -1,12 +1,12 @@
 import Link from 'next/link';
-import { ArrowRight, Building2, Smartphone, Wrench } from 'lucide-react';
+import { ArrowRight, Building2, Recycle, Smartphone, Wrench } from 'lucide-react';
 import { BRAND } from '@/domain/brand';
 
 export default function HomePage() {
   return (
     <main className="landing">
       <section>
-        <p style={{ color: 'var(--c-accent)', fontWeight: 850, textTransform: 'uppercase', letterSpacing: '.08em' }}>
+        <p className="eyebrow-brand">
           Recycle-as-a-Service
         </p>
         <h1>{BRAND.name}</h1>
@@ -32,7 +32,7 @@ export default function HomePage() {
         </div>
       </section>
       <section className="medal" aria-hidden="true">
-        <div className="mark">♻</div>
+        <div className="mark"><Recycle /></div>
       </section>
     </main>
   );

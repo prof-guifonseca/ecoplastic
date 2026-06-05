@@ -19,10 +19,10 @@ export function AppErrorFallback() {
 
   return (
     <main className="loading-screen">
-      <div style={{ textAlign: 'center', maxWidth: 440, padding: 24 }}>
+      <div className="text-center max-w-[440px] p-6">
         <h2>Algo deu errado</h2>
         <p className="sub">A demonstracao continua disponivel. Recarregue a pagina ou reinicie os dados de demonstracao.</p>
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 16 }}>
+        <div className="flex gap-2 justify-center mt-4">
           <button className="btn primary" onClick={() => location.reload()}>Recarregar</button>
           <button className="btn ghost" onClick={reset}>Resetar demonstracao</button>
         </div>

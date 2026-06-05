@@ -6,6 +6,7 @@ import { moradorAtual } from '@/domain/selectors';
 import { useEcoPlastic } from '@/store/ecoplastic-store';
 import { useToast } from '@/components/ui/toast';
 import { useConfirm } from '@/components/ui/dialog';
+import { rewardIcon } from '@/components/ui/icons';
 
 export function TrocarMoradorScreen() {
   const { state, actions } = useEcoPlastic();
@@ -31,7 +32,7 @@ export function TrocarMoradorScreen() {
     <>
       <h2 className="p-greet">Trocar pontos</h2>
       <div className="p-balance">
-        <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '.04em', opacity: .85 }}>Saldo</div>
+        <div className="eyebrow">Saldo</div>
         <div className="pts">{num(morador.pontos)} pts</div>
       </div>
       <div className="p-rewards">
@@ -39,10 +40,10 @@ export function TrocarMoradorScreen() {
           const pode = morador.pontos >= recompensa.custoPontos && recompensa.estoque > 0;
           return (
             <div className="p-reward" key={recompensa.id}>
-              <div className="ico">{recompensa.ico}</div>
+              <div className="ico">{rewardIcon(recompensa.ico)}</div>
               <div className="ttl">{recompensa.titulo}</div>
               <div className="desc">{recompensa.descricao} · {recompensa.estoque} em estoque</div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
+              <div className="flex items-center justify-between mt-2">
                 <div className="cost">{num(recompensa.custoPontos)} pts</div>
                 <Button size="sm" variant={pode ? 'primary' : 'secondary'} disabled={!pode} onClick={() => resgatar(recompensa.id)}>
                   {recompensa.estoque <= 0 ? 'Esgotado' : 'Trocar'}

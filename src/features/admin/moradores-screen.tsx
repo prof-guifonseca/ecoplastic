@@ -40,13 +40,13 @@ export function MoradoresScreen() {
         </div>
       </div>
 
-      <div className="grid grid-3" style={{ marginBottom: 16 }}>
+      <div className="grid grid-3 mb-4">
         <KpiCard label="Cadastrados" value={`${cadastrados}/${state.condominio.unidades}`} delta={`${pendentes} convite(s) pendente(s)`} />
         <KpiCard label="Ativos no mes" value={String(ativos)} delta={`${Math.round((ativos / cadastrados) * 100) || 0}% de adesao`} />
         <KpiCard label="Pontos distribuidos" value={num(pontos)} delta={`≈ ${brl(valor)}`} />
       </div>
 
-      <div className="grid grid-2" style={{ marginBottom: 16 }}>
+      <div className="grid grid-2 mb-4">
         <Card>
           <h3>Convidar morador</h3>
           <div className="form-grid">
@@ -64,7 +64,7 @@ export function MoradoresScreen() {
           {state.convites.length ? (
             <div className="ranking-list">
               {state.convites.slice(-5).reverse().map((convite) => (
-                <div className="ranking-row" style={{ gridTemplateColumns: '1fr auto' }} key={convite.id}>
+                <div className="ranking-row compact" key={convite.id}>
                   <div>
                     <b>{convite.email}</b>
                     <div className="meta">Apto {convite.apto}</div>
@@ -84,19 +84,19 @@ export function MoradoresScreen() {
           <tbody>
             {top.map((morador, index) => (
               <tr key={morador.id}>
-                <td><b style={{ color: 'var(--c-accent)' }}>{index + 1}º</b></td>
+                <td><b className="text-accent">{index + 1}º</b></td>
                 <td>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div className="flex items-center gap-2.5">
                     <div className="avatar">{initials(morador.nome)}</div>
                     <div>
                       <b>{morador.nome}</b>
-                      <div style={{ fontSize: 11, color: 'var(--c-muted)' }}>{morador.email}</div>
+                      <div className="text-xs text-muted">{morador.email}</div>
                     </div>
                   </div>
                 </td>
                 <td>{morador.apto}</td>
                 <td>{dec(morador.kgTotal)}</td>
-                <td><b style={{ color: 'var(--c-brand)' }}>{num(morador.pontos)}</b></td>
+                <td><b className="text-brand">{num(morador.pontos)}</b></td>
                 <td>{index < 3 ? <Tag tone="ok">{index === 0 ? '-R$ 50 boleto' : index === 1 ? '-R$ 25' : '-R$ 10'}</Tag> : null}</td>
               </tr>
             ))}

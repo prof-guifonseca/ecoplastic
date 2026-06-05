@@ -50,13 +50,13 @@ export function FinanceiroScreen() {
         <Button onClick={compartilhar}><Share2 size={17} /> Compartilhar resumo</Button>
       </div>
 
-      <div className="grid grid-3" style={{ marginBottom: 16 }}>
+      <div className="grid grid-3 mb-4">
         <KpiCard label="Saldo do condominio" value={brl(saldo)} delta="aplicavel no boleto" />
         <KpiCard label={`Acumulado ${new Date().getFullYear()}`} value={brl(acumulado)} />
         <KpiCard label="Projecao anual" value={brl(projecao)} delta="baseado nos ultimos 6 meses" />
       </div>
 
-      <div className="grid grid-2" style={{ marginBottom: 16 }}>
+      <div className="grid grid-2 mb-4">
         <Card>
           <h3>Reparticao da receita</h3>
           <div className="split-bar"><div className="seg-a" /><div className="seg-b" /></div>
@@ -78,13 +78,13 @@ export function FinanceiroScreen() {
               { label: 'Fundo reserva sustentavel', value: brl(saldo * 0.1) },
               { label: 'Saldo a aplicar', value: brl(saldo * 0.05) }
             ].map((row) => (
-              <div className="next-pickup" style={{ padding: 10, border: '1px solid var(--c-border)', borderRadius: 'var(--r-md)', background: 'rgba(255,255,255,.04)' }} key={row.label}>
+              <div className="next-pickup boxed" key={row.label}>
                 <span>{row.label}</span>
                 <b>{row.value}</b>
               </div>
             ))}
           </div>
-          <Button variant="primary" style={{ marginTop: 14, width: '100%' }} onClick={() => notify('success', 'Reparticao aplicada', 'Credito agendado para o proximo boleto.')}>
+          <Button variant="primary" className="mt-3.5 w-full" onClick={() => notify('success', 'Reparticao aplicada', 'Credito agendado para o proximo boleto.')}>
             Aplicar reparticao automatica
           </Button>
         </Card>

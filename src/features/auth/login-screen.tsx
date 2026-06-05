@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { Building2, Smartphone } from 'lucide-react';
+import { Recycle } from '@/components/ui/icons';
 import { BRAND } from '@/domain/brand';
 import { useEcoPlastic } from '@/store/ecoplastic-store';
 import { useToast } from '@/components/ui/toast';
@@ -46,15 +47,15 @@ export function LoginScreen() {
   return (
     <main className="login">
       <section className="login-card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, marginBottom: 8 }}>
+        <div className="flex justify-between items-start gap-4 mb-2">
           <div className="login-brand">
-            <div className="logo">♻</div>
+            <div className="logo"><Recycle size={22} /></div>
             <div>
               <h1>{BRAND.name}</h1>
-              <small style={{ color: 'var(--c-muted)' }}>Recycle-as-a-Service · {state.condominio.nome}</small>
+              <small className="text-muted">Recycle-as-a-Service · {state.condominio.nome}</small>
             </div>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
+          <div className="flex flex-col gap-1.5 items-end">
             <Link className="btn ghost sm" href="/">Voltar a entrada</Link>
             <Link className="btn ghost sm" href="/equipamento/">Conhecer equipamento</Link>
           </div>

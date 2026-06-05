@@ -9,6 +9,7 @@ import type { ColetaStatus } from '@/domain/types';
 import { useEcoPlastic } from '@/store/ecoplastic-store';
 import { useToast } from '@/components/ui/toast';
 import { Modal, useConfirm } from '@/components/ui/dialog';
+import { CalendarDays, Truck } from '@/components/ui/icons';
 
 const STATUS_TAG: Record<ColetaStatus, 'ok' | 'info' | 'warn' | 'bad'> = {
   concluida: 'ok',
@@ -84,15 +85,15 @@ export function ColetasScreen() {
         </div>
       </div>
 
-      <div className="banner" style={{ marginBottom: 16 }}>
-        <div className="ico">🚛</div>
+      <div className="banner mb-4">
+        <div className="ico"><Truck size={22} /></div>
         <div className="body">
           <b>Estrategia de coleta:</b> agrupamos as coletas com outros condominios da regiao para reduzir custo logistico.
           Cooperativa atual: <b>{coop?.nome ?? '-'}</b> ({coop ? brl(coop.precoKg) : '-'} / kg, {coop?.distanciaKm ?? '-'} km).
         </div>
       </div>
 
-      <div className="grid grid-2" style={{ marginBottom: 16 }}>
+      <div className="grid grid-2 mb-4">
         <Card>
           <h3>Solicitar coleta avulsa</h3>
           <div className="form-grid">
@@ -108,10 +109,10 @@ export function ColetasScreen() {
         {prox ? (
           <Card className="next-pickup">
             <div>
-              <div className="when">📅 {dt(prox.data)} · 14h</div>
+              <div className="when"><CalendarDays size={16} /> {dt(prox.data)} · 14h</div>
               <div className="meta">Proxima coleta agendada com {coop?.nome}</div>
             </div>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <div className="flex flex-wrap gap-2">
               <Button onClick={() => abrirReagendar(prox.id)}>Reagendar</Button>
               <Button variant="danger" onClick={() => cancelar(prox.id)}>Cancelar</Button>
             </div>
