@@ -5,10 +5,12 @@ import Link from 'next/link';
 import { ArrowLeft, Boxes, Maximize2, Play, Recycle } from 'lucide-react';
 import { BRAND } from '@/domain/brand';
 import { Card } from '@/components/ui/primitives';
+import { ChartSkeleton } from '@/components/ui/skeleton';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
 
 const EquipmentViewer = dynamic(() => import('@/components/equipment/equipment-viewer').then((mod) => mod.EquipmentViewer), {
   ssr: false,
-  loading: () => <div className="loading-screen" style={{ minHeight: 620 }}>Carregando compactador 3D...</div>
+  loading: () => <ChartSkeleton minHeight={620} label="Carregando compactador 3D" />
 });
 
 export default function EquipamentoPage() {
@@ -38,7 +40,9 @@ export default function EquipamentoPage() {
           </div>
         </div>
         <Card className="viewer-card">
-          <EquipmentViewer />
+          <ErrorBoundary fallback={<div className="viewer-fallback"><div><strong>{BRAND.name} Station</strong><p>Visualizacao 3D indisponivel neste dispositivo. Veja as especificacoes ao lado.</p></div></div>}>
+            <EquipmentViewer />
+          </ErrorBoundary>
         </Card>
       </section>
 

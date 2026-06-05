@@ -490,6 +490,15 @@ button { cursor: pointer; }
 .prototipo-embed { padding: 8px; }
 .prototipo-iframe { width: 100%; height: 70vh; min-height: 520px; border: 0; border-radius: var(--r-md); display: block; background: var(--c-bg-0); }
 
+.viewer-host { width: 100%; height: 100%; min-height: 620px; }
+.viewer-fallback { width: 100%; min-height: 620px; display: grid; place-items: center; text-align: center; padding: 24px; background: radial-gradient(circle at 50% 30%, rgba(54,209,127,.08), transparent 60%); }
+.viewer-fallback strong { font-size: 20px; }
+.viewer-fallback p { color: var(--c-muted); max-width: 320px; margin: 8px auto 0; }
+
+.skeleton { display: block; background: linear-gradient(90deg, rgba(255,255,255,.04), rgba(255,255,255,.10), rgba(255,255,255,.04)); background-size: 200% 100%; animation: skeleton-shimmer 1.4s ease infinite; }
+.chart-skeleton { display: grid; align-items: end; padding: 16px; }
+@keyframes skeleton-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
 @media (max-width: 1080px) {
   .grid-4, .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .admin-shell { grid-template-columns: 1fr; }
@@ -524,4 +533,15 @@ button { cursor: pointer; }
     scroll-behavior: auto !important;
     transition-duration: .01ms !important;
   }
+}
+
+/* Impressao: tema claro "paper" e sem cromo, para prints do ESG e banner do diario de bordo. */
+@media print {
+  .sidebar, .phone-nav, .phone-aside, .toast-stack, .landing-actions, .topbar .btn, .topbar a.btn, .source-note .mark, button { display: none !important; }
+  body { background: #fff !important; color: #14201d !important; }
+  .admin-shell, .admin-main, .card, .hero, .banner { background: #fff !important; color: #14201d !important; box-shadow: none !important; }
+  .card { border: 1px solid #cdd8d2 !important; break-inside: avoid; }
+  h1, h2, h3, b, .value, .big { color: #102019 !important; }
+  .sub, .label, .meta, p { color: #3c4a45 !important; }
+  a { color: #102019 !important; text-decoration: none; }
 }
