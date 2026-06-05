@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { ArrowLeft, Play, Recycle } from 'lucide-react';
+import { ArrowLeft, Boxes, Play, Recycle } from 'lucide-react';
 import { BRAND } from '@/domain/brand';
 import { Card } from '@/components/ui/primitives';
 
@@ -28,6 +28,7 @@ export default function EquipamentoPage() {
           <div className="landing-actions">
             <Link className="btn primary" href="/app/login/?p=sindico"><Play size={17} /> Abrir MVP</Link>
             <Link className="btn secondary" href="/app/login/?p=morador"><Recycle size={17} /> Simular descarte</Link>
+            <Link className="btn ghost" href="/prototipo-3d/" target="_blank" rel="noopener"><Boxes size={17} /> Protótipo 3D completo</Link>
           </div>
           <div className="spec-list">
             <div><span>Capacidade demonstrada</span><b>250 kg</b></div>
