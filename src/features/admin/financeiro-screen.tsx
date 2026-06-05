@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { useMemo, useState } from 'react';
 import { Share2 } from 'lucide-react';
 import { Button, Card, KpiCard } from '@/components/ui/primitives';
+import { ChartSkeleton } from '@/components/ui/skeleton';
 import { brl, dec, num } from '@/domain/format';
 import { acumuladoAno, projecaoAnual, saldoCondominio, simulateFinanceiro } from '@/domain/selectors';
 import { BRAND } from '@/domain/brand';
@@ -13,7 +14,7 @@ import { SourceNote } from '@/components/ui/source-note';
 
 const SplitDonutChart = dynamic(() => import('@/components/charts/split-donut-chart').then((mod) => mod.SplitDonutChart), {
   ssr: false,
-  loading: () => <div className="loading-screen" style={{ minHeight: 160 }}>Carregando grafico...</div>
+  loading: () => <ChartSkeleton minHeight={160} />
 });
 
 export function FinanceiroScreen() {

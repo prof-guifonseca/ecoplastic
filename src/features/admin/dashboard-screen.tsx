@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import { ArrowRight } from 'lucide-react';
 import { Card, KpiCard } from '@/components/ui/primitives';
+import { ChartSkeleton } from '@/components/ui/skeleton';
 import { brl, dec, dt, initials, num, pct } from '@/domain/format';
 import {
   metricasEsg,
@@ -19,7 +20,7 @@ import { useEcoPlastic } from '@/store/ecoplastic-store';
 
 const RevenueChart = dynamic(() => import('@/components/charts/revenue-chart').then((mod) => mod.RevenueChart), {
   ssr: false,
-  loading: () => <div className="loading-screen" style={{ minHeight: 260 }}>Carregando grafico...</div>
+  loading: () => <ChartSkeleton minHeight={260} />
 });
 
 export function DashboardScreen() {
