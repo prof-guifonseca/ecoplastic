@@ -20,7 +20,6 @@ const APP_SHELL = [
   '/app/sindico/esg/',
   '/app/sindico/config/',
   '/equipamento/',
-  '/prototipo/',
   '/prototipo-3d/',
   '/prototipo-3d/vendor/three.min.js',
   '/prototipo-3d/vendor/qrcode.min.js',
