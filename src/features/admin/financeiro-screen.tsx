@@ -9,6 +9,7 @@ import { acumuladoAno, projecaoAnual, saldoCondominio, simulateFinanceiro } from
 import { BRAND } from '@/domain/brand';
 import { useEcoPlastic } from '@/store/ecoplastic-store';
 import { useToast } from '@/components/ui/toast';
+import { SourceNote } from '@/components/ui/source-note';
 
 const SplitDonutChart = dynamic(() => import('@/components/charts/split-donut-chart').then((mod) => mod.SplitDonutChart), {
   ssr: false,
@@ -64,6 +65,7 @@ export function FinanceiroScreen() {
           </div>
           <p className="sub">{BRAND.name} cobre operacao da maquina, integracao com cooperativa, plataforma e suporte.</p>
           <div className="chart-wrap sm"><SplitDonutChart split={state.configPontos.splitCondominio} /></div>
+          <SourceNote>Reparticao 70/30 e uma hipotese de modelo de negocio (nao e fato cientifico).</SourceNote>
         </Card>
 
         <Card>
@@ -109,6 +111,7 @@ export function FinanceiroScreen() {
           <div className="big">{brl(simulacao.receitaAnual)}</div>
           <div className="sub">{dec(simulacao.kgMes)} kg/mes · {num(unidades)} unidades</div>
         </div>
+        <SourceNote>Premissas: 5,8 kg/morador.mes (faixa 4-8) e R$/kg da cooperativa (CEMPRE). Ver docs/metodologia-financeira.md.</SourceNote>
       </Card>
     </>
   );

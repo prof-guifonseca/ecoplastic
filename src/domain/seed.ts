@@ -53,9 +53,12 @@ function gerarMoradores(now: number): Morador[] {
 
   const julia = moradores.find((morador) => morador.nome.startsWith('Julia'));
   if (julia) {
+    // Moradora-destaque (#1 do ranking) com pontos coerentes: kgTotal * pontosPorKg (30)
+    // mais um bonus de engajamento dentro da faixa dos demais moradores.
     julia.apto = '1204';
-    julia.pontos = 3420;
-    julia.kgTotal = 13.6;
+    julia.email = `${julia.nome.toLowerCase().split(' ')[0]}.${julia.apto}@condo.com`;
+    julia.kgTotal = 64;
+    julia.pontos = Math.round(julia.kgTotal * 30) + 240;
     julia.ativo = true;
   }
 
@@ -136,6 +139,22 @@ export function buildSeed(now = Date.now()): EcoPlasticState {
   ];
   const moradores = gerarMoradores(now);
   const coletas = gerarColetas('coop_recicla_sp', cooperativas, now);
+  const transacoes = gerarTransacoes(moradores, now);
+
+  // Estado da maquina derivado dos dados (nao hardcoded): a ultima coleta concluida
+  // esvaziou o compactador, e a ocupacao atual e a soma dos depositos desde entao.
+  const capacidadeKg = 250;
+  const ultimaColeta = coletas
+    .filter((coleta) => coleta.status === 'concluida')
+    .reduce((max, coleta) => Math.max(max, coleta.data), 0);
+  const ocupadoKg = Number(
+    Math.min(
+      capacidadeKg,
+      transacoes
+        .filter((transacao) => transacao.tipo === 'deposito' && transacao.ts >= ultimaColeta)
+        .reduce((sum, transacao) => sum + (transacao.kg ?? 0), 0)
+    ).toFixed(1)
+  );
 
   return {
     schemaVersion: BRAND.schemaVersion,
@@ -149,9 +168,9 @@ export function buildSeed(now = Date.now()): EcoPlasticState {
     },
     maquina: {
       id: 'maq_001',
-      capacidadeKg: 250,
-      ocupadoKg: 168,
-      ultimaColeta: now - 12 * 86_400_000
+      capacidadeKg,
+      ocupadoKg,
+      ultimaColeta
     },
     cooperativa: { atualId: 'coop_recicla_sp', lista: cooperativas },
     configPontos: {
@@ -163,7 +182,7 @@ export function buildSeed(now = Date.now()): EcoPlasticState {
     moradores,
     convites: [],
     coletas,
-    transacoes: gerarTransacoes(moradores, now),
+    transacoes,
     recompensas: [
       { id: 'r_desc_10', titulo: 'R$ 10 desconto no boleto', descricao: 'Aplicado no proximo condominio', ico: '💰', custoPontos: 2000, parceiro: 'Condominio', estoque: 50 },
       { id: 'r_desc_25', titulo: 'R$ 25 desconto no boleto', descricao: 'Aplicado no proximo condominio', ico: '💰', custoPontos: 5000, parceiro: 'Condominio', estoque: 30 },

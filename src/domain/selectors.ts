@@ -1,3 +1,5 @@
+import { ESG_FACTORS } from '../content/esg-factors';
+import { KG_POR_MORADOR_MES, PRECO_KG } from '../content/financial-assumptions';
 import type { Coleta, EcoPlasticState, Morador } from './types';
 
 export function cooperativaAtual(state: EcoPlasticState) {
@@ -129,8 +131,8 @@ export function projecaoAnual(state: EcoPlasticState) {
 export function simulateFinanceiro(state: EcoPlasticState, unidades: number, engajamentoPct: number) {
   const coop = cooperativaAtual(state);
   const ativos = Math.round(unidades * (engajamentoPct / 100));
-  const kgMes = ativos * 5.8;
-  const receitaBruta = kgMes * (coop?.precoKg ?? 2.45);
+  const kgMes = ativos * KG_POR_MORADOR_MES.value;
+  const receitaBruta = kgMes * (coop?.precoKg ?? PRECO_KG.mid);
   const receitaMensal = receitaBruta * state.configPontos.splitCondominio;
   return { kgMes, receitaMensal, receitaAnual: receitaMensal * 12 };
 }
@@ -142,11 +144,10 @@ export function metricasEsg(state: EcoPlasticState) {
 
   return {
     kg,
-    garrafas: Math.round(kg * 30),
-    co2Toneladas: Number((kg * 0.0027).toFixed(2)),
-    arvores: Math.round(kg * 0.045),
-    aguaLitros: Math.round(kg * 10),
-    energiaKwh: Math.round(kg * 5.4)
+    garrafas: Math.round(kg * ESG_FACTORS.garrafas.perKg),
+    co2Toneladas: Number((kg * ESG_FACTORS.co2.perKg).toFixed(2)),
+    aguaLitros: Math.round(kg * ESG_FACTORS.agua.perKg),
+    energiaKwh: Math.round(kg * ESG_FACTORS.energia.perKg)
   };
 }
 

@@ -235,14 +235,15 @@
   })();
   </script>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+  <!-- Dependencias vendorizadas localmente para funcionar offline (contingencia da feira) -->
+  <script src="vendor/three.min.js"></script>
+  <script src="vendor/qrcode.min.js"></script>
 
   <script>
   (function(){
     if(typeof THREE === 'undefined'){
       const e = document.getElementById('err');
-      if(e){ e.style.display='block'; e.textContent='⚠ Three.js não carregou. Verifique conexão (cdnjs).'; }
+      if(e){ e.style.display='block'; e.textContent='⚠ Three.js não carregou. Recarregue a página.'; }
       throw new Error('THREE not loaded');
     }
   })();

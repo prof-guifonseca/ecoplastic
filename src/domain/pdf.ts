@@ -51,10 +51,9 @@ export function saveEsgPdf(state: EcoPlasticState) {
   doc.setFontSize(11);
   doc.setTextColor(60, 70, 70);
   [
-    `${metrics.arvores} arvores preservadas`,
-    `${num(metrics.aguaLitros)} litros de agua economizados`,
-    `${num(metrics.energiaKwh)} kWh de energia poupados`,
-    `${num(metrics.garrafas)} garrafas PET fora do aterro`
+    `${num(metrics.garrafas)} garrafas PET fora do aterro`,
+    `${num(metrics.aguaLitros)} litros de agua economizados (producao)`,
+    `${num(metrics.energiaKwh)} kWh de energia poupados`
   ].forEach((line) => {
     doc.text(line, 40, y);
     y += 17;
@@ -81,9 +80,12 @@ export function saveEsgPdf(state: EcoPlasticState) {
     y += 17;
   }
 
+  doc.setFontSize(8);
+  doc.setTextColor(150, 150, 150);
+  doc.text('Indicadores estimados com fatores da literatura (APR 2020, ACS 2018) sobre dados demonstrativos. Ver docs/metodologia-esg.md.', 40, 806, { maxWidth: width - 80 });
   doc.setFontSize(9);
   doc.setTextColor(145, 145, 145);
-  doc.text(`Gerado por ${BRAND.name} - plataforma Recycle-as-a-Service para condominios`, 40, 820);
+  doc.text(`Gerado por ${BRAND.name} - plataforma Recycle-as-a-Service para condominios`, 40, 822);
 
   const filename = `ESG_${state.condominio.nome.replace(/\W+/g, '_')}_${new Date().toISOString().slice(0, 7)}.pdf`;
   doc.save(filename);

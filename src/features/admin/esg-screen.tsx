@@ -8,6 +8,7 @@ import { saveEsgPdf } from '@/domain/pdf';
 import { metricasEsg } from '@/domain/selectors';
 import { useEcoPlastic } from '@/store/ecoplastic-store';
 import { useToast } from '@/components/ui/toast';
+import { DemoTag, SourceNote } from '@/components/ui/source-note';
 
 export function EsgScreen() {
   const { state } = useEcoPlastic();
@@ -42,6 +43,7 @@ export function EsgScreen() {
         <div>
           <h1>Relatorio ESG</h1>
           <div className="sub">Impactos ambientais do predio para assembleias e comunicados</div>
+          <div style={{ marginTop: 8 }}><DemoTag /></div>
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <Button onClick={compartilhar}><Share2 size={17} /> Compartilhar</Button>
@@ -67,15 +69,18 @@ export function EsgScreen() {
               <div><b style={{ fontSize: 24, color: '#1e9f5a' }}>{num(metrics.garrafas)}</b><br /><span>Garrafas PET</span></div>
               <div><b style={{ fontSize: 24, color: '#1e9f5a' }}>{metrics.co2Toneladas} t</b><br /><span>CO2 evitado</span></div>
             </div>
-            <p>Equivalente a {metrics.arvores} arvores preservadas, {num(metrics.aguaLitros)} litros de agua economizados e {num(metrics.energiaKwh)} kWh poupados.</p>
+            <p>Equivalente a {num(metrics.garrafas)} garrafas PET fora do aterro, {num(metrics.aguaLitros)} litros de agua economizados (producao) e {num(metrics.energiaKwh)} kWh poupados.</p>
           </div>
+          <SourceNote>
+            Fatores: CO2 0,0015 t/kg e energia 5,4 kWh/kg (APR 2020; ACS 2018); garrafas a 25 g; agua escopo producao. Dados demonstrativos, ver docs/metodologia-esg.md.
+          </SourceNote>
         </Card>
 
         <div className="grid">
           <Card>
             <h3>Equivalencias ambientais</h3>
             <div className="form-grid">
-              <div className="next-pickup"><span>🌳 Arvores preservadas</span><b>{metrics.arvores}</b></div>
+              <div className="next-pickup"><span>🍶 Garrafas fora do aterro</span><b>{num(metrics.garrafas)}</b></div>
               <div className="next-pickup"><span>💧 Litros de agua</span><b>{num(metrics.aguaLitros)}</b></div>
               <div className="next-pickup"><span>⚡ kWh economizados</span><b>{num(metrics.energiaKwh)}</b></div>
             </div>
