@@ -15,7 +15,7 @@ export function renderMoradorStandalone(root) {
       <aside class="sidebar" style="margin:16px 0 16px 16px;height:calc(100vh - 32px)">
         <div class="sb-brand">
           <div class="logo">♻️</div>
-          <div><h2>EcoTech</h2><small>App do morador</small></div>
+          <div><h2>EcoPlastic</h2><small>App do morador</small></div>
         </div>
         <div class="sb-condo" id="sbMorador">
           <div class="name">${m.nome}</div>

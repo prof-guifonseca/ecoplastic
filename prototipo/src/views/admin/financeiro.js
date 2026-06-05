@@ -40,10 +40,10 @@ export function renderFinanceiro(root) {
         <div class="split-bar"><div class="seg-a"></div><div class="seg-b"></div></div>
         <div class="split-legend">
           <div><span class="dot" style="background:var(--c-brand)"></span><b>${splitPct}%</b> Condomínio</div>
-          <div><span class="dot" style="background:var(--c-accent)"></span><b>${100 - splitPct}%</b> EcoTech</div>
+          <div><span class="dot" style="background:var(--c-accent)"></span><b>${100 - splitPct}%</b> EcoPlastic</div>
         </div>
         <p style="color:var(--c-muted);font-size:13px;margin-top:14px">
-          A EcoTech cobre operação da máquina, integração com cooperativa, plataforma e suporte.
+          A EcoPlastic cobre operação da máquina, integração com cooperativa, plataforma e suporte.
         </p>
         <div class="chart-wrap sm" style="margin-top:8px"><canvas id="splitChart"></canvas></div>
       </div>
@@ -113,9 +113,9 @@ export function renderFinanceiro(root) {
 
   // Actions
   root.querySelector('#shareLink').addEventListener('click', async () => {
-    const txt = `Nosso condomínio gerou ${brl(saldo)} reciclando PET com a EcoTech.`;
+    const txt = `Nosso condomínio gerou ${brl(saldo)} reciclando PET com a EcoPlastic.`;
     if (navigator.share) {
-      try { await navigator.share({ title: 'EcoTech', text: txt }); return; } catch {}
+      try { await navigator.share({ title: 'EcoPlastic', text: txt }); return; } catch {}
     }
     await navigator.clipboard.writeText(txt);
     toast.success('Link copiado', 'Cole onde quiser compartilhar.');

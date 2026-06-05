@@ -1,0 +1,120 @@
+'use client';
+
+import dynamic from 'next/dynamic';
+import { ArrowRight } from 'lucide-react';
+import { Card, KpiCard } from '@/components/ui/primitives';
+import { brl, dec, dt, initials, num, pct } from '@/domain/format';
+import {
+  metricasEsg,
+  proximaAgendada,
+  ranking,
+  receitaMes,
+  totalAtivosMes,
+  totalCadastrados,
+  totalKgMes,
+  totaisMensais,
+  variacaoMes
+} from '@/domain/selectors';
+import { useEcoPlastic } from '@/store/ecoplastic-store';
+
+const RevenueChart = dynamic(() => import('@/components/charts/revenue-chart').then((mod) => mod.RevenueChart), {
+  ssr: false,
+  loading: () => <div className="loading-screen" style={{ minHeight: 260 }}>Carregando grafico...</div>
+});
+
+export function DashboardScreen() {
+  const { state } = useEcoPlastic();
+  const kg = totalKgMes(state, 0);
+  const kgAnt = totalKgMes(state, 1) || 1;
+  const kgVar = ((kg - kgAnt) / kgAnt) * 100;
+  const receita = receitaMes(state, 0);
+  const receitaVar = variacaoMes(state);
+  const ativos = totalAtivosMes(state);
+  const cadastrados = totalCadastrados(state);
+  const metrics = metricasEsg(state);
+  const ocupacao = Math.round((state.maquina.ocupadoKg / state.maquina.capacidadeKg) * 100);
+  const top = ranking(state, 3);
+  const prox = proximaAgendada(state);
+
+  return (
+    <>
+      <div className="topbar">
+        <div>
+          <h1>Dashboard</h1>
+          <div className="sub">{new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}</div>
+        </div>
+      </div>
+
+      <section className="hero">
+        <div>
+          <h2>Em {new Date().toLocaleDateString('pt-BR', { month: 'long' })}, o lixo do predio gerou {brl(receita * state.configPontos.splitCondominio)} em receita.</h2>
+          <p>{dec(kg)} kg de PET reciclados · {num(metrics.garrafas)} garrafas · CO2 evitado: {metrics.co2Toneladas} t</p>
+        </div>
+        <div className="pill" style={receitaVar.pct < 0 ? { background: 'rgba(255,107,107,.12)', color: '#ffb3b3', borderColor: 'rgba(255,107,107,.3)' } : undefined}>
+          {receitaVar.pct >= 0 ? '▲' : '▼'} {pct(Math.abs(receitaVar.pct), 100)} vs mes anterior
+        </div>
+      </section>
+
+      <div className="grid grid-4" style={{ marginBottom: 16 }}>
+        <KpiCard label="Reciclado" value={`${dec(kg)} kg`} delta={`${kgVar >= 0 ? '▲' : '▼'} ${pct(Math.abs(kgVar), 100)} vs mes ant.`} negative={kgVar < 0} />
+        <KpiCard label="Receita do condominio" value={brl(receita * state.configPontos.splitCondominio)} delta={`${receitaVar.abs >= 0 ? '▲' : '▼'} ${brl(Math.abs(receitaVar.abs * state.configPontos.splitCondominio))}`} negative={receitaVar.abs < 0} />
+        <KpiCard label="Moradores ativos" value={`${ativos}/${cadastrados}`} delta={`${pct(ativos, cadastrados || 1)} de adesao`} />
+        <KpiCard label="CO2 evitado" value={`${metrics.co2Toneladas} t`} delta="acumulado" />
+      </div>
+
+      <div className="grid grid-2" style={{ marginBottom: 16 }}>
+        <Card>
+          <h3>Evolucao · ultimos 6 meses</h3>
+          <div className="chart-wrap"><RevenueChart data={totaisMensais(state)} /></div>
+        </Card>
+        <Card>
+          <h3>Antes x Depois</h3>
+          <div className="grid grid-2">
+            <div>
+              <div className="label">Antes</div>
+              <div className="big" style={{ color: 'var(--c-danger)' }}>-{brl(320)}</div>
+              <p className="sub">despesa mensal com remocao</p>
+            </div>
+            <div>
+              <div className="label">Agora</div>
+              <div className="big" style={{ color: 'var(--c-brand)' }}>+{brl(receita * state.configPontos.splitCondominio)}</div>
+              <p className="sub">receita liquida do condominio</p>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      <div className="grid grid-3">
+        <Card>
+          <h3>Capacidade da maquina</h3>
+          <div className="big">{ocupacao}%</div>
+          <div className={`bar ${ocupacao > 80 ? 'warn' : ''}`} style={{ marginTop: 10 }}><div className="fill" style={{ width: `${ocupacao}%` }} /></div>
+          <p className="sub">{dec(state.maquina.ocupadoKg)} de {state.maquina.capacidadeKg} kg · proxima coleta {prox ? dt(prox.data) : 'a definir'}</p>
+        </Card>
+        <Card>
+          <h3>Top 3 moradores</h3>
+          <div className="ranking-list">
+            {top.map((morador, index) => (
+              <div className="ranking-row" key={morador.id}>
+                <div className="pos">{index + 1}º</div>
+                <div className="avatar">{initials(morador.nome)}</div>
+                <div>
+                  <div>{morador.nome}</div>
+                  <div className="meta">Apto {morador.apto} · {dec(morador.kgTotal)} kg</div>
+                </div>
+                <div className="pts">{num(morador.pontos)} pts</div>
+              </div>
+            ))}
+          </div>
+        </Card>
+        <Card>
+          <h3>Proxima acao</h3>
+          <p className="sub">Compartilhe o relatorio ESG do mes com os moradores e registre a evidencia no historico da demonstracao.</p>
+          <a className="btn primary" href="/app/sindico/esg/" style={{ marginTop: 12 }}>
+            Abrir relatorio <ArrowRight size={16} />
+          </a>
+        </Card>
+      </div>
+    </>
+  );
+}
