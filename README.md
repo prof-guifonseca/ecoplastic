@@ -2,6 +2,8 @@
 
 > MVP offline de Recycle-as-a-Service para condominios: compactador inteligente de PET, app do morador, painel do sindico, coletas, financeiro, recompensas e relatorio ESG.
 
+**Nota de marca:** o repositorio se chama `ecotech` por historico, mas o produto e a marca atuais sao **EcoPlastic**. A chave legada `ecotech:v1` e migrada automaticamente para `ecoplastic:v2`.
+
 ## Stack
 
 - Next 16 + React 19 + TypeScript
@@ -26,6 +28,7 @@ Abra <http://localhost:3000>.
 | --- | --- |
 | `/` | Entrada do produto |
 | `/equipamento/` | Compactador 3D e proposta tecnica |
+| `/prototipo-3d/` | Prototipo 3D completo (Three.js standalone): prensa, tanque, portinhola, vista explodida, raio-X e BOM |
 | `/app/login/` | Escolha de persona |
 | `/app/login/?p=sindico` | Entrada rapida no painel do sindico |
 | `/app/login/?p=morador` | Entrada rapida no app do morador |
@@ -44,6 +47,7 @@ Abra <http://localhost:3000>.
 
 - `/prototipo/?p=sindico` e `/prototipo/?p=morador` redirecionam para o login novo.
 - `/ecotech.html` redireciona para `/equipamento/` no Netlify e tambem existe como fallback estatico em `public/`.
+- O prototipo 3D original (Three.js standalone) foi preservado em `public/prototipo-3d/` e publicado em `/prototipo-3d/`, com link na pagina `/equipamento/`.
 - Dados antigos em `localStorage` com `ecotech:v1` sao migrados para `ecoplastic:v2`.
 
 ## Verificacao
