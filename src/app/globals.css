@@ -1,3 +1,18 @@
+/* Tailwind v4 — utilitarios + theme, SEM preflight (preserva os estilos existentes). */
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+@theme {
+  --color-brand: #36d17f;
+  --color-brand-dark: #1e9f5a;
+  --color-panel: #0f2026;
+  --color-ink: #edf4f1;
+  --color-muted: #94aaa6;
+  --color-border: #244249;
+  --color-danger: #ff6b6b;
+}
+
 :root {
   --c-bg-0: #071114;
   --c-bg-1: #0d1b20;
@@ -498,6 +513,14 @@ button { cursor: pointer; }
 .skeleton { display: block; background: linear-gradient(90deg, rgba(255,255,255,.04), rgba(255,255,255,.10), rgba(255,255,255,.04)); background-size: 200% 100%; animation: skeleton-shimmer 1.4s ease infinite; }
 .chart-skeleton { display: grid; align-items: end; padding: 16px; }
 @keyframes skeleton-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* Dialogos acessiveis (Radix) + foco visivel (Fase 1/2 — UI enterprise). */
+.dialog-overlay { position: fixed; inset: 0; background: rgba(2, 8, 10, .64); backdrop-filter: blur(2px); z-index: 60; }
+.dialog-content { position: fixed; z-index: 61; top: 50%; left: 50%; transform: translate(-50%, -50%); width: min(440px, calc(100vw - 32px)); background: var(--c-panel); border: 1px solid var(--c-border); border-radius: var(--r-lg); box-shadow: var(--shadow-2); padding: 22px; }
+.dialog-title { margin: 0 0 6px; font-size: 18px; font-weight: 800; color: var(--c-text); }
+.dialog-desc { margin: 0; color: var(--c-muted); font-size: 14px; line-height: 1.5; }
+.dialog-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
+:where(a, button, input, textarea, select, [tabindex]):focus-visible { outline: none; box-shadow: 0 0 0 2px var(--c-bg-0), 0 0 0 4px var(--c-plastic); }
 
 @media (max-width: 1080px) {
   .grid-4, .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }

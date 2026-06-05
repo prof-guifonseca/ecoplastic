@@ -8,11 +8,13 @@ import { brl } from '@/domain/format';
 import { cooperativaAtual } from '@/domain/selectors';
 import { useEcoPlastic } from '@/store/ecoplastic-store';
 import { useToast } from '@/components/ui/toast';
+import { useConfirm } from '@/components/ui/dialog';
 
 export function ConfigScreen() {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const { state, actions } = useEcoPlastic();
   const { notify } = useToast();
+  const confirm = useConfirm();
   const coop = cooperativaAtual(state);
 
   const importar = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -28,8 +30,9 @@ export function ConfigScreen() {
     }
   };
 
-  const reset = () => {
-    if (!window.confirm('Resetar todos os dados da demonstracao?')) return;
+  const reset = async () => {
+    const ok = await confirm({ title: 'Resetar a demonstracao?', description: 'Volta ao seed deterministico inicial. Os dados locais atuais serao perdidos.', confirmLabel: 'Resetar', tone: 'danger' });
+    if (!ok) return;
     actions.resetarDemo();
     notify('success', 'Dados resetados', 'Voltamos ao seed deterministico inicial.');
   };
