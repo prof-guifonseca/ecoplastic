@@ -1,7 +1,12 @@
-// Service worker do EcoPlastic — cache-first para boot offline (contingencia da feira).
-// Precacheia o app shell (todas as rotas navegaveis + assets do prototipo 3D).
-// Os chunks hasheados de _next/static sao cacheados em runtime no primeiro acesso.
-const CACHE_NAME = 'ecoplastic-static-v3';
+// Service worker do EcoPlastic.
+//
+// Estrategia (corrige "tela bugada" pos-deploy para quem ja tinha cache):
+// - NAVEGACOES (HTML): network-first -> online sempre serve a versao mais nova
+//   (que referencia os chunks atuais); offline cai no cache (ou no login).
+// - DEMAIS GETs (chunks hasheados de _next/static, assets): cache-first, pois
+//   sao imutaveis (o hash muda a cada build).
+// CACHE_NAME versionado: ao atualizar o worker, o activate apaga caches antigos.
+const CACHE_NAME = 'ecoplastic-static-v4';
 
 const APP_SHELL = [
   '/',
@@ -30,7 +35,6 @@ const APP_SHELL = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(async (cache) => {
-      // cache.add individual + allSettled: um 404 isolado nao quebra o install.
       await Promise.allSettled(APP_SHELL.map((url) => cache.add(url)));
       await self.skipWaiting();
     })
@@ -47,17 +51,32 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return;
-  event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request)
+  const req = event.request;
+  if (req.method !== 'GET') return;
+
+  const isNavigation = req.mode === 'navigate' || req.destination === 'document';
+
+  if (isNavigation) {
+    event.respondWith(
+      fetch(req)
         .then((response) => {
           const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+          caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
           return response;
         })
-        .catch(() => caches.match('/app/login/'));
+        .catch(() => caches.match(req).then((cached) => cached || caches.match('/app/login/')))
+    );
+    return;
+  }
+
+  event.respondWith(
+    caches.match(req).then((cached) => {
+      if (cached) return cached;
+      return fetch(req).then((response) => {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
+        return response;
+      });
     })
   );
 });
