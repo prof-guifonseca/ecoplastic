@@ -24,7 +24,7 @@ Caso mais estudantes tenham participado no clube, ha tres caminhos seguros:
 
 ## Nome verificado no repositorio
 
-O repositorio recomendado para continuidade do projeto e `prof-guifonseca/ecoplastic`, com a copia local atual em `C:\Users\guilh\dev\ecotech`.
+O repositorio recomendado para continuidade do projeto e `prof-guifonseca/ecoplastic`, com a copia local em `C:\Users\guilh\dev\ecoplastic`.
 
 Nome do projeto no repositorio: EcoPlastic.
 

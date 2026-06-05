@@ -56,7 +56,6 @@ export function EcoPlasticProvider({ children }: { children: React.ReactNode }) 
     const result = loadPersistedState();
     if (result.state) {
       setState(result.state);
-      if (result.migrated) setLastStorageMessage(`Dados migrados de ${BRAND.legacyStorageKey}.`);
     } else if (result.error) {
       setLastStorageMessage(`Dados locais invalidos foram ignorados: ${result.error}.`);
     } else {
