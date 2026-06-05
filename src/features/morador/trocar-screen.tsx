@@ -5,17 +5,20 @@ import { num } from '@/domain/format';
 import { moradorAtual } from '@/domain/selectors';
 import { useEcoPlastic } from '@/store/ecoplastic-store';
 import { useToast } from '@/components/ui/toast';
+import { useConfirm } from '@/components/ui/dialog';
 
 export function TrocarMoradorScreen() {
   const { state, actions } = useEcoPlastic();
   const { notify } = useToast();
+  const confirm = useConfirm();
   const morador = moradorAtual(state);
   if (!morador) return <EmptyState>Morador nao encontrado.</EmptyState>;
 
-  const resgatar = (recompensaId: string) => {
+  const resgatar = async (recompensaId: string) => {
     const recompensa = state.recompensas.find((item) => item.id === recompensaId);
     if (!recompensa) return;
-    if (!window.confirm(`Resgatar "${recompensa.titulo}" por ${num(recompensa.custoPontos)} pts?`)) return;
+    const ok = await confirm({ title: `Resgatar ${recompensa.titulo}?`, description: `Custa ${num(recompensa.custoPontos)} pontos do seu saldo.`, confirmLabel: 'Resgatar' });
+    if (!ok) return;
     try {
       actions.resgatarRecompensa(morador.id, recompensaId);
       notify('success', 'Resgatado', `Confira no historico: ${recompensa.titulo}.`);

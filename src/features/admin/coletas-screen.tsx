@@ -8,6 +8,7 @@ import { cooperativaAtual, listarColetas, proximaAgendada } from '@/domain/selec
 import type { ColetaStatus } from '@/domain/types';
 import { useEcoPlastic } from '@/store/ecoplastic-store';
 import { useToast } from '@/components/ui/toast';
+import { Modal, useConfirm } from '@/components/ui/dialog';
 
 const STATUS_TAG: Record<ColetaStatus, 'ok' | 'info' | 'warn' | 'bad'> = {
   concluida: 'ok',
@@ -26,9 +27,12 @@ const STATUS_LABEL: Record<ColetaStatus, string> = {
 export function ColetasScreen() {
   const { state, actions } = useEcoPlastic();
   const { notify } = useToast();
+  const confirm = useConfirm();
   const [minDate] = useState(() => inputDate(new Date(Date.now() + 86_400_000)));
   const [data, setData] = useState(minDate);
   const [observacao, setObservacao] = useState('');
+  const [reagendarId, setReagendarId] = useState<string | null>(null);
+  const [novaData, setNovaData] = useState(minDate);
   const lista = listarColetas(state);
   const prox = proximaAgendada(state);
   const coop = cooperativaAtual(state);
@@ -43,19 +47,26 @@ export function ColetasScreen() {
     }
   };
 
-  const reagendar = (coletaId: string) => {
-    const novaData = window.prompt('Nova data da coleta (AAAA-MM-DD)', minDate);
-    if (!novaData) return;
+  const abrirReagendar = (coletaId: string) => {
+    setNovaData(minDate);
+    setReagendarId(coletaId);
+  };
+
+  const confirmarReagendar = () => {
+    if (!reagendarId) return;
     try {
-      actions.reagendarColeta(coletaId, novaData);
+      actions.reagendarColeta(reagendarId, novaData);
       notify('success', 'Coleta reagendada', `Nova data: ${novaData}.`);
     } catch (error) {
       notify('error', 'Falha ao reagendar', error instanceof Error ? error.message : undefined);
+    } finally {
+      setReagendarId(null);
     }
   };
 
-  const cancelar = (coletaId: string) => {
-    if (!window.confirm('Cancelar esta coleta? A cooperativa sera notificada na demonstracao.')) return;
+  const cancelar = async (coletaId: string) => {
+    const ok = await confirm({ title: 'Cancelar coleta?', description: 'A cooperativa sera notificada na demonstracao.', confirmLabel: 'Cancelar coleta', cancelLabel: 'Voltar', tone: 'danger' });
+    if (!ok) return;
     try {
       actions.cancelarColeta(coletaId);
       notify('info', 'Coleta cancelada');
@@ -101,7 +112,7 @@ export function ColetasScreen() {
               <div className="meta">Proxima coleta agendada com {coop?.nome}</div>
             </div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <Button onClick={() => reagendar(prox.id)}>Reagendar</Button>
+              <Button onClick={() => abrirReagendar(prox.id)}>Reagendar</Button>
               <Button variant="danger" onClick={() => cancelar(prox.id)}>Cancelar</Button>
             </div>
           </Card>
@@ -129,7 +140,7 @@ export function ColetasScreen() {
                     <td><Tag tone={STATUS_TAG[coleta.status]}>{STATUS_LABEL[coleta.status]}</Tag></td>
                     <td className="row-actions">
                       {coleta.status === 'agendada' || coleta.status === 'pendente' ? (
-                        <Button size="sm" onClick={() => reagendar(coleta.id)}>Reagendar</Button>
+                        <Button size="sm" onClick={() => abrirReagendar(coleta.id)}>Reagendar</Button>
                       ) : null}
                     </td>
                   </tr>
@@ -139,6 +150,16 @@ export function ColetasScreen() {
           </table>
         ) : <EmptyState>Nenhuma coleta registrada ainda.</EmptyState>}
       </Card>
+
+      <Modal open={reagendarId !== null} onOpenChange={(o) => { if (!o) setReagendarId(null); }} title="Reagendar coleta" description="Escolha a nova data da coleta.">
+        <Field label="Nova data">
+          <input type="date" min={minDate} value={novaData} onChange={(event) => setNovaData(event.target.value)} />
+        </Field>
+        <div className="dialog-actions">
+          <button type="button" className="btn ghost" onClick={() => setReagendarId(null)}>Cancelar</button>
+          <button type="button" className="btn primary" onClick={confirmarReagendar}>Reagendar</button>
+        </div>
+      </Modal>
     </>
   );
 }
