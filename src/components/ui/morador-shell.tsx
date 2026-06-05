@@ -24,10 +24,11 @@ export function MoradorShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="phone-stage">
+      <a className="skip-link" href="#conteudo">Pular para o conteudo</a>
       <div className="phone-shell">
         <header className="phone-top">
           <div className="brand-mini">
-            <div className="logo">♻</div>
+            <div className="logo"><Recycle size={20} /></div>
             <div>
               <strong>{BRAND.name}</strong>
               <small>{morador ? `Apto ${morador.apto}` : 'App do morador'}</small>
@@ -46,7 +47,7 @@ export function MoradorShell({ children }: { children: React.ReactNode }) {
             <LogOut size={17} />
           </button>
         </header>
-        <section className="phone-content">{children}</section>
+        <section className="phone-content" id="conteudo">{children}</section>
         <nav className="phone-nav" aria-label="Navegacao do morador">
           {NAV.map((item) => {
             const Icon = item.icon;

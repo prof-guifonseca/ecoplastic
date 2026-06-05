@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useEffect, useMemo, useState } from 'react';
 import { Button, EmptyState } from '@/components/ui/primitives';
+import { Recycle } from '@/components/ui/icons';
 import { BRAND } from '@/domain/brand';
 import { buildQrPayload } from '@/domain/qr';
 import { moradorAtual } from '@/domain/selectors';
@@ -11,7 +12,7 @@ import { useToast } from '@/components/ui/toast';
 
 const QrCanvas = dynamic(() => import('@/components/qr/qr-canvas').then((mod) => mod.QrCanvas), {
   ssr: false,
-  loading: () => <div style={{ width: 236, height: 236, display: 'grid', placeItems: 'center', color: '#071114' }}>QR...</div>
+  loading: () => <div className="grid place-items-center" style={{ width: 236, height: 236, color: 'var(--c-bg-0)' }}>QR...</div>
 });
 
 const TTL = 60;
@@ -66,8 +67,8 @@ export function QrMoradorScreen() {
           <li>Insira a garrafa PET no compartimento</li>
           <li>Pontos creditados automaticamente</li>
         </ol>
-        <Button variant="primary" onClick={simular} style={{ width: '100%' }}>♻ Simular deposito (0,4 kg)</Button>
-        <small className="sub" style={{ textAlign: 'center' }}>Payload local: {BRAND.qrScheme}</small>
+        <Button variant="primary" onClick={simular} className="w-full"><Recycle size={16} /> Simular deposito (0,4 kg)</Button>
+        <small className="sub block text-center">Payload local: {BRAND.qrScheme}</small>
       </div>
     </>
   );

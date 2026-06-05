@@ -11,6 +11,7 @@
   --color-muted: #94aaa6;
   --color-border: #244249;
   --color-danger: #ff6b6b;
+  --color-accent: #f3b35b;
 }
 
 :root {
@@ -539,6 +540,18 @@ button { cursor: pointer; }
 .paper-card h2 { margin: 0; color: var(--paper-ink); }
 .paper-card .muted { color: var(--paper-ink-muted); }
 .paper-card .figure { font-size: var(--fs-xl); color: var(--paper-accent); font-weight: var(--fw-black); }
+
+/* Classes reutilizaveis da lapidacao (substituem inline styles repetidos). */
+.boxed { padding: 10px; border: 1px solid var(--c-border); border-radius: var(--r-md); background: rgba(255, 255, 255, .04); }
+.boxed.active-coop { border-color: var(--c-brand); }
+.ranking-row.compact { grid-template-columns: 1fr auto; }
+.eyebrow { font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: .04em; opacity: .85; }
+p.eyebrow-brand { color: var(--c-accent); font-weight: var(--fw-black); text-transform: uppercase; letter-spacing: .08em; }
+.p-feed-item.me { border-color: var(--c-brand); }
+.pill.neg { background: rgba(255, 107, 107, .12); color: #ffb3b3; border-color: rgba(255, 107, 107, .3); }
+.medal .mark svg { width: clamp(78px, 13vw, 160px); height: clamp(78px, 13vw, 160px); color: var(--c-brand); }
+.skip-link { position: absolute; left: 12px; top: -52px; z-index: 100; background: var(--c-brand); color: #04140b; padding: 8px 14px; border-radius: var(--r-md); font-weight: 800; transition: top .16s ease; }
+.skip-link:focus { top: 12px; }
 
 @media (max-width: 1080px) {
   .grid-4, .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }

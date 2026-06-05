@@ -9,6 +9,7 @@ import { cooperativaAtual } from '@/domain/selectors';
 import { useEcoPlastic } from '@/store/ecoplastic-store';
 import { useToast } from '@/components/ui/toast';
 import { useConfirm } from '@/components/ui/dialog';
+import { cn } from '@/lib/utils';
 
 export function ConfigScreen() {
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -67,14 +68,14 @@ export function ConfigScreen() {
         <Card>
           <h3>Cooperativa parceira</h3>
           {coop ? (
-            <div style={{ padding: 14, background: 'rgba(255,255,255,.04)', border: '1px solid var(--c-border)', borderRadius: 'var(--r-md)', marginBottom: 14 }}>
-              <div style={{ fontWeight: 800, fontSize: 16 }}>{coop.nome}</div>
+            <div className="boxed mb-3.5">
+              <div className="font-extrabold text-base">{coop.nome}</div>
               <div className="sub">{brl(coop.precoKg)}/kg · {coop.distanciaKm} km</div>
             </div>
           ) : null}
           <div className="form-grid">
             {state.cooperativa.lista.map((item) => (
-              <label className="next-pickup" style={{ border: `1px solid ${item.id === state.cooperativa.atualId ? 'var(--c-brand)' : 'var(--c-border)'}`, borderRadius: 'var(--r-md)', padding: 10 }} key={item.id}>
+              <label className={cn('next-pickup boxed', item.id === state.cooperativa.atualId && 'active-coop')} key={item.id}>
                 <span>
                   <input
                     type="radio"
@@ -84,7 +85,7 @@ export function ConfigScreen() {
                       actions.trocarCooperativa(item.id);
                       notify('success', 'Cooperativa atualizada', `Proximas coletas com ${item.nome}.`);
                     }}
-                    style={{ marginRight: 8 }}
+                    className="mr-2"
                   />
                   {item.nome}
                 </span>
@@ -107,13 +108,13 @@ export function ConfigScreen() {
         <Card>
           <h3>Backup offline</h3>
           <p className="sub">Exporte/importa JSON para manter uma demonstracao viva sem banco de dados.</p>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <div className="flex flex-wrap gap-2">
             <Button onClick={actions.exportarDados}><Download size={17} /> Exportar JSON</Button>
             <Button onClick={() => inputRef.current?.click()}><Upload size={17} /> Importar JSON</Button>
             <Button variant="danger" onClick={reset}><RotateCcw size={17} /> Resetar demo</Button>
           </div>
           <input ref={inputRef} type="file" accept="application/json,.json" onChange={importar} hidden />
-          <p className="sub" style={{ marginTop: 14 }}>
+          <p className="sub mt-3.5">
             Chave local atual: <code>{BRAND.storageKey}</code>.
           </p>
         </Card>
@@ -122,7 +123,7 @@ export function ConfigScreen() {
           <h3>Auditoria local</h3>
           <div className="ranking-list">
             {state.auditLog.slice(0, 8).map((event) => (
-              <div className="ranking-row" style={{ gridTemplateColumns: '1fr auto' }} key={event.id}>
+              <div className="ranking-row compact" key={event.id}>
                 <div>
                   <b>{event.summary}</b>
                   <div className="meta">{event.action} · {new Date(event.ts).toLocaleString('pt-BR')}</div>
