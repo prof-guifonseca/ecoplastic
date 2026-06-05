@@ -26,8 +26,7 @@ test('resident QR deposit updates points and history', async ({ page }) => {
   await expect(page.getByText('0.4 kg PET').first()).toBeVisible();
 });
 
-test('legacy prototype URL bridges to the new app', async ({ page }) => {
-  await page.goto('/prototipo/?p=sindico');
-  await expect(page).toHaveURL(/\/app\/sindico\/dashboard\//);
-  await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
+test('/app/ index redireciona para o login', async ({ page }) => {
+  await page.goto('/app/');
+  await expect(page).toHaveURL(/\/app\/login\//);
 });

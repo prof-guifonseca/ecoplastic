@@ -42,8 +42,7 @@ Abra <http://localhost:3000>.
 
 ## Compatibilidade
 
-- `/prototipo/?p=sindico` e `/prototipo/?p=morador` redirecionam para o login novo.
-- O prototipo 3D original (Three.js standalone) foi preservado em `public/prototipo-3d/` e publicado em `/prototipo-3d/`, com link na pagina `/equipamento/`.
+- O prototipo 3D original (Three.js standalone) foi preservado em `public/prototipo-3d/` e publicado em `/prototipo-3d/`, embutido (iframe) e com link em tela cheia na pagina `/equipamento/`.
 
 ## Verificacao
 
