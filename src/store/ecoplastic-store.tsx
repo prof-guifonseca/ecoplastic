@@ -74,8 +74,11 @@ export function EcoPlasticProvider({ children }: { children: React.ReactNode }) 
     const onStorage = (event: StorageEvent) => {
       if (event.key !== BRAND.storageKey || !event.newValue) return;
       try {
-        const imported = stateFromImport(event.newValue) ?? JSON.parse(event.newValue);
-        setState(imported as EcoPlasticState);
+        // Valida sempre (sem fallback para JSON.parse cru): dados de outra aba
+        // tambem passam pelo schema antes de virar estado.
+        const imported = stateFromImport(event.newValue);
+        if (!imported) return;
+        setState(imported);
         setLastStorageMessage('Dados atualizados em outra aba.');
       } catch {}
     };
