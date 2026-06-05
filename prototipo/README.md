@@ -1,6 +1,6 @@
-# EcoTech — Protótipo Funcional
+# EcoPlastic — Protótipo Funcional
 
-Protótipo navegável da plataforma **EcoTech** (Recycle-as-a-Service para condomínios). SPA vanilla com estado persistido, fluxos completos, gráficos Chart.js, QR Code real e PDF do ESG via jsPDF.
+Protótipo navegável da plataforma **EcoPlastic** (Recycle-as-a-Service para condomínios). SPA vanilla com estado persistido, fluxos completos, gráficos Chart.js, QR Code real e PDF do ESG via jsPDF.
 
 ## Como abrir
 

@@ -1,5 +1,6 @@
 [build]
-  publish = "."
+  command = "npm run build"
+  publish = "out"
 
 [[headers]]
   for = "/*"
@@ -8,14 +9,12 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
 
-# JS modules need correct MIME (Netlify serves correctly by default, but be explicit)
-[[headers]]
-  for = "/*.js"
-  [headers.values]
-    Content-Type = "application/javascript; charset=utf-8"
+[[redirects]]
+  from = "/ecotech.html"
+  to = "/equipamento/"
+  status = 301
 
-# Allow direct access to /prototipo/ (single-page app inside its own folder)
 [[redirects]]
   from = "/prototipo"
-  to   = "/prototipo/"
+  to = "/prototipo/"
   status = 301

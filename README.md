@@ -1,52 +1,69 @@
-# EcoTech
+# EcoPlastic
 
-> Recycle-as-a-Service para condomínios — compactador inteligente de PET + plataforma SaaS com gestão, gamificação e relatório ESG.
-
-## Estrutura
-
-| Arquivo / pasta | O que é |
-| --- | --- |
-| `index.html` | Entrada do site: hero medalhão + 2 CTAs primários (Síndico · Morador) + link "Conheça o equipamento" |
-| `ecotech.html` | Conheça o equipamento: pitch, BOM e render 3D do compactador |
-| `prototipo/` | App navegável (SPA vanilla com `localStorage`, Chart.js, QR code real, PDF do ESG via jsPDF). Aceita `?p=sindico` / `?p=morador` para auto-login |
-
-## Rodando localmente
-
-```bash
-# Qualquer servidor estático servindo a raiz funciona:
-npx serve .
-# ou
-python -m http.server 8080
-```
-
-Abra `http://localhost:5173` (ou a porta usada).
-
-## Deploy no Netlify
-
-A raiz já tem `netlify.toml`. Basta:
-
-```bash
-# Drag-and-drop do ZIP na UI do Netlify, ou:
-netlify deploy --prod --dir=.
-```
-
-## Protótipo — fluxos demonstráveis
-
-1. Login → Síndico → Dashboard com KPIs reais e gráfico Chart.js
-2. **Coletas**: solicitar avulsa, reagendar, cancelar
-3. **Financeiro**: simulador com sliders, share via Web Share API
-4. **Moradores**: convidar (modal repetível com validação), ranking top 20
-5. **ESG**: download do PDF (jsPDF), share por WhatsApp / e-mail / Instagram
-6. **Configurações**: trocar cooperativa, resetar dados de demonstração
-7. **Morador**: QR rotativo (60 s), simular depósito → propaga para o painel do síndico em tempo real
-8. **Trocar pontos**: 6 recompensas, debita pontos e atualiza saldo em 3 lugares (UI, sidebar, localStorage)
+> MVP offline de Recycle-as-a-Service para condominios: compactador inteligente de PET, app do morador, painel do sindico, coletas, financeiro, recompensas e relatorio ESG.
 
 ## Stack
 
-- HTML5 / CSS3 / JS modular (ES Modules) — sem build, sem npm install
-- Chart.js, qrcode.js (davidshimjs) e jsPDF via CDN
-- Persistência: `localStorage` versionado (`ecotech:v1`)
+- Next 16 + React 19 + TypeScript
+- App Router com `output: "export"` para deploy estatico
+- Turbopack via `next dev` / `next build`
+- Persistencia local versionada: `ecoplastic:v2`
+- Migracao automatica da chave legada: `ecotech:v1`
+- Chart.js, QRCode, jsPDF, Three.js e lucide-react via npm
 
-## Licença
+## Rodando
 
-Uso acadêmico — Engenharia de Software.
+```bash
+npm install
+npm run dev
+```
+
+Abra <http://localhost:3000>.
+
+## Rotas principais
+
+| Rota | Funcao |
+| --- | --- |
+| `/` | Entrada do produto |
+| `/equipamento/` | Compactador 3D e proposta tecnica |
+| `/app/login/` | Escolha de persona |
+| `/app/login/?p=sindico` | Entrada rapida no painel do sindico |
+| `/app/login/?p=morador` | Entrada rapida no app do morador |
+| `/app/sindico/dashboard/` | KPIs, ranking, capacidade e grafico |
+| `/app/sindico/coletas/` | Solicitar, reagendar e cancelar coletas |
+| `/app/sindico/financeiro/` | Saldo, reparticao e simulador |
+| `/app/sindico/moradores/` | Convites e ranking |
+| `/app/sindico/esg/` | PDF ESG e compartilhamento |
+| `/app/sindico/config/` | Cooperativa, backup/importacao e reset |
+| `/app/morador/inicio/` | Saldo, ranking e atividade recente |
+| `/app/morador/historico/` | Depositos e resgates |
+| `/app/morador/trocar/` | Recompensas |
+| `/app/morador/qr/` | QR real e simulacao de deposito |
+
+## Compatibilidade
+
+- `/prototipo/?p=sindico` e `/prototipo/?p=morador` redirecionam para o login novo.
+- `/ecotech.html` redireciona para `/equipamento/` no Netlify e tambem existe como fallback estatico em `public/`.
+- Dados antigos em `localStorage` com `ecotech:v1` sao migrados para `ecoplastic:v2`.
+
+## Verificacao
+
+```bash
+npm run typecheck
+npm run lint
+npm run test
+npm run build
+npm run e2e
+```
+
+## Deploy Netlify
+
+O `netlify.toml` roda `npm run build` e publica `out/`.
+
+```bash
+netlify deploy --prod
+```
+
+## Sem banco de dados
+
+O MVP nao usa backend, API routes, Server Actions, cookies de autenticacao ou banco. O estado fica no navegador, com exportacao/importacao JSON para backup e continuidade de demonstracoes.

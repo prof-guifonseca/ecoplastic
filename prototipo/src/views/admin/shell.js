@@ -36,7 +36,7 @@ export function renderAdminShell(root, screenId = 'dashboard') {
         <div class="sb-brand">
           <div class="logo">♻️</div>
           <div>
-            <h2>EcoTech</h2>
+            <h2>EcoPlastic</h2>
             <small>Painel do síndico</small>
           </div>
         </div>

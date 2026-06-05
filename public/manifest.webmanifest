@@ -1,0 +1,17 @@
+{
+  "name": "EcoPlastic",
+  "short_name": "EcoPlastic",
+  "description": "MVP offline para reciclagem de PET em condominios.",
+  "start_url": "/app/login/",
+  "display": "standalone",
+  "background_color": "#071114",
+  "theme_color": "#071114",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
