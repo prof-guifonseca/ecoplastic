@@ -9,6 +9,10 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# Opta pelo Node 24 nas actions (checkout/setup-node) antes da mudanca forcada do GitHub (16/06/2026).
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   quality:
     name: Typecheck, lint, unit tests
