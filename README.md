@@ -2,15 +2,12 @@
 
 > MVP offline de Recycle-as-a-Service para condominios: compactador inteligente de PET, app do morador, painel do sindico, coletas, financeiro, recompensas e relatorio ESG.
 
-**Nota de marca:** o repositorio se chama `ecotech` por historico, mas o produto e a marca atuais sao **EcoPlastic**. A chave legada `ecotech:v1` e migrada automaticamente para `ecoplastic:v2`.
-
 ## Stack
 
 - Next 16 + React 19 + TypeScript
 - App Router com `output: "export"` para deploy estatico
 - Turbopack via `next dev` / `next build`
 - Persistencia local versionada: `ecoplastic:v2`
-- Migracao automatica da chave legada: `ecotech:v1`
 - Chart.js, QRCode, jsPDF, Three.js e lucide-react via npm
 
 ## Rodando
@@ -46,9 +43,7 @@ Abra <http://localhost:3000>.
 ## Compatibilidade
 
 - `/prototipo/?p=sindico` e `/prototipo/?p=morador` redirecionam para o login novo.
-- `/ecotech.html` redireciona para `/equipamento/` no Netlify e tambem existe como fallback estatico em `public/`.
 - O prototipo 3D original (Three.js standalone) foi preservado em `public/prototipo-3d/` e publicado em `/prototipo-3d/`, com link na pagina `/equipamento/`.
-- Dados antigos em `localStorage` com `ecotech:v1` sao migrados para `ecoplastic:v2`.
 
 ## Verificacao
 

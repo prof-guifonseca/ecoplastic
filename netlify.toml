@@ -10,11 +10,6 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
 
 [[redirects]]
-  from = "/ecotech.html"
-  to = "/equipamento/"
-  status = 301
-
-[[redirects]]
   from = "/prototipo"
   to = "/prototipo/"
   status = 301

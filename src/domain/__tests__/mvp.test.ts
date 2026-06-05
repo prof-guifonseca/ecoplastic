@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { BRAND, LEGACY_BRAND_NAME } from '../brand';
+import { BRAND } from '../brand';
 import { depositarPET, resgatarRecompensa, solicitarColeta } from '../actions';
-import { migrateLegacyState, validateState } from '../migration';
+import { validateState } from '../migration';
 import { buildQrPayload } from '../qr';
 import { buildSeed } from '../seed';
 import { metricasEsg, saldoCondominio, simulateFinanceiro } from '../selectors';
@@ -54,17 +54,14 @@ describe('EcoPlastic domain', () => {
     expect(esg.garrafas).toBe(Math.round(esg.kg * 30));
   });
 
-  it('validates current state and migrates legacy EcoTech state', () => {
-    const legacy = buildSeed(1_800_000_000_000) as unknown as Record<string, unknown>;
-    legacy.schemaVersion = 1;
-    const legacyRewards = legacy.recompensas as Array<Record<string, unknown>>;
-    legacy.recompensas = [{ ...legacyRewards[0], parceiro: LEGACY_BRAND_NAME }];
-    const migrated = migrateLegacyState(legacy);
-
+  it('validates current state and rejects incompatible schema versions', () => {
     expect(validateState(buildSeed(1_800_000_000_000))).not.toBeNull();
-    expect(migrated?.schemaVersion).toBe(BRAND.schemaVersion);
-    expect(migrated?.recompensas[0].parceiro).toBe(BRAND.name);
-    expect(migrated?.auditLog[0].action).toBe('storage.migrated');
+
+    const wrongVersion = buildSeed(1_800_000_000_000) as unknown as Record<string, unknown>;
+    wrongVersion.schemaVersion = 1;
+    expect(validateState(wrongVersion)).toBeNull();
+
+    expect(validateState({ foo: 'bar' })).toBeNull();
   });
 
   it('creates collection requests and QR payloads with the EcoPlastic scheme', () => {

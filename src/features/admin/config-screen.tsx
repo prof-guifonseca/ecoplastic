@@ -111,7 +111,7 @@ export function ConfigScreen() {
           </div>
           <input ref={inputRef} type="file" accept="application/json,.json" onChange={importar} hidden />
           <p className="sub" style={{ marginTop: 14 }}>
-            Chave local atual: <code>{BRAND.storageKey}</code>. Dados antigos em <code>{BRAND.legacyStorageKey}</code> sao migrados automaticamente.
+            Chave local atual: <code>{BRAND.storageKey}</code>.
           </p>
         </Card>
 

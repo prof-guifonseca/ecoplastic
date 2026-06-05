@@ -1,12 +1,11 @@
 'use client';
 
 import { BRAND } from '@/domain/brand';
-import { migrateLegacyState, normalizeImportedState, validateState } from '@/domain/migration';
+import { normalizeImportedState, validateState } from '@/domain/migration';
 import type { EcoPlasticState, ImportEnvelope } from '@/domain/types';
 
 export interface LoadResult {
   state: EcoPlasticState | null;
-  migrated: boolean;
   error?: string;
 }
 
@@ -18,16 +17,10 @@ function parseJson(raw: string | null) {
 export function loadPersistedState(): LoadResult {
   try {
     const current = validateState(parseJson(localStorage.getItem(BRAND.storageKey)));
-    if (current) return { state: current, migrated: false };
-
-    const legacy = migrateLegacyState(parseJson(localStorage.getItem(BRAND.legacyStorageKey)));
-    if (legacy) {
-      saveState(legacy);
-      return { state: legacy, migrated: true };
-    }
-    return { state: null, migrated: false };
+    if (current) return { state: current };
+    return { state: null };
   } catch (error) {
-    return { state: null, migrated: false, error: error instanceof Error ? error.message : 'Falha ao ler dados locais' };
+    return { state: null, error: error instanceof Error ? error.message : 'Falha ao ler dados locais' };
   }
 }
 
