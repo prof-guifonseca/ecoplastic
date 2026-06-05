@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { ArrowLeft, Boxes, Play, Recycle } from 'lucide-react';
+import { ArrowLeft, Boxes, Maximize2, Play, Recycle } from 'lucide-react';
 import { BRAND } from '@/domain/brand';
 import { Card } from '@/components/ui/primitives';
 
@@ -28,7 +28,7 @@ export default function EquipamentoPage() {
           <div className="landing-actions">
             <Link className="btn primary" href="/app/login/?p=sindico"><Play size={17} /> Abrir MVP</Link>
             <Link className="btn secondary" href="/app/login/?p=morador"><Recycle size={17} /> Simular descarte</Link>
-            <Link className="btn ghost" href="/prototipo-3d/" target="_blank" rel="noopener"><Boxes size={17} /> Protótipo 3D completo</Link>
+            <a className="btn ghost" href="#prototipo-3d"><Boxes size={17} /> Ver protótipo 3D completo</a>
           </div>
           <div className="spec-list">
             <div><span>Capacidade demonstrada</span><b>250 kg</b></div>
@@ -39,6 +39,24 @@ export default function EquipamentoPage() {
         </div>
         <Card className="viewer-card">
           <EquipmentViewer />
+        </Card>
+      </section>
+
+      <section id="prototipo-3d" className="prototipo-3d-section">
+        <div className="topbar">
+          <div>
+            <h2>Protótipo 3D completo</h2>
+            <p className="sub">Prensa, tanque, portinhola, vista explodida, raio-X e lista de materiais (BOM) &mdash; interativo e roda offline.</p>
+          </div>
+          <Link className="btn secondary" href="/prototipo-3d/" target="_blank" rel="noopener"><Maximize2 size={16} /> Abrir em tela cheia</Link>
+        </div>
+        <Card className="prototipo-embed">
+          <iframe
+            src="/prototipo-3d/"
+            title="Protótipo 3D completo do compactador EcoPlastic"
+            className="prototipo-iframe"
+            loading="lazy"
+          />
         </Card>
       </section>
     </main>

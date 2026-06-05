@@ -480,6 +480,16 @@ button { cursor: pointer; }
 .toast.info { border-color: rgba(100,182,247,.35); }
 .toast.error { border-color: rgba(255,107,107,.4); }
 
+.source-note { display: flex; gap: 6px; align-items: flex-start; margin-top: 10px; font-size: 12px; line-height: 1.45; color: var(--c-muted); }
+.source-note .mark { color: var(--c-plastic); flex: none; font-style: normal; }
+.disclaimer-tag { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--c-muted); border: 1px solid var(--c-border); border-radius: 999px; padding: 3px 10px; }
+.disclaimer-tag .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--c-accent); }
+
+.prototipo-3d-section { margin-top: 28px; }
+.prototipo-3d-section .topbar { margin-bottom: 14px; }
+.prototipo-embed { padding: 8px; }
+.prototipo-iframe { width: 100%; height: 70vh; min-height: 520px; border: 0; border-radius: var(--r-md); display: block; background: var(--c-bg-0); }
+
 @media (max-width: 1080px) {
   .grid-4, .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .admin-shell { grid-template-columns: 1fr; }
@@ -504,6 +514,7 @@ button { cursor: pointer; }
   .landing h1 { font-size: 58px; }
   .equipment-page { padding: 18px; }
   .viewer-card, .viewer-card canvas { min-height: 440px; }
+  .prototipo-iframe { height: 60vh; min-height: 420px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

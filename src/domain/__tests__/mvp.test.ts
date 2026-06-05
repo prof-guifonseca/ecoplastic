@@ -5,6 +5,7 @@ import { validateState } from '../migration';
 import { buildQrPayload } from '../qr';
 import { buildSeed } from '../seed';
 import { metricasEsg, saldoCondominio, simulateFinanceiro } from '../selectors';
+import { ESG_FACTORS } from '../../content/esg-factors';
 
 describe('EcoPlastic domain', () => {
   it('builds deterministic seed data for demos', () => {
@@ -51,7 +52,10 @@ describe('EcoPlastic domain', () => {
 
     expect(saldo).toBeGreaterThan(0);
     expect(sim.receitaAnual).toBeGreaterThan(sim.receitaMensal);
-    expect(esg.garrafas).toBe(Math.round(esg.kg * 30));
+    expect(esg.garrafas).toBe(Math.round(esg.kg * ESG_FACTORS.garrafas.perKg));
+    expect(esg.co2Toneladas).toBe(Number((esg.kg * ESG_FACTORS.co2.perKg).toFixed(2)));
+    expect(esg.energiaKwh).toBe(Math.round(esg.kg * ESG_FACTORS.energia.perKg));
+    expect(esg).not.toHaveProperty('arvores');
   });
 
   it('validates current state and rejects incompatible schema versions', () => {
