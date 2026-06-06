@@ -184,7 +184,7 @@
     <div class="toggle" data-on="false" id="t-xray"><span>Raio-X (paredes transparentes)</span><span class="sw"></span></div>
     <div class="toggle" data-on="false" id="t-explode"><span>Vista explodida</span><span class="sw"></span></div>
     <div class="toggle" data-on="true" id="t-annotations"><span>Anotações ao passar o mouse</span><span class="sw"></span></div>
-    <div class="toggle" data-on="true" id="t-rotate"><span>Rotação automática</span><span class="sw"></span></div>
+    <div class="toggle" data-on="false" id="t-rotate"><span>Rotação automática</span><span class="sw"></span></div>
 
     <h3>Câmera</h3>
     <div class="row">
@@ -406,7 +406,7 @@
     const offset = new THREE.Vector3(); offset.copy(camera.position).sub(target);
     sph.setFromVector3(offset);
     const state = { isDown:false, button:0, lastX:0, lastY:0,
-      autoRotate:true, autoRotateSpeed:0.0017,
+      autoRotate:false, autoRotateSpeed:0.0017,
       minDistance:60, maxDistance:520, minPolar:0.18, maxPolar:Math.PI/2 - 0.04 };
     function onDown(e){ e.preventDefault(); state.isDown=true; state.button=e.button; state.lastX=e.clientX; state.lastY=e.clientY }
     function onMove(e){
