@@ -249,7 +249,7 @@ export function EquipmentViewer() {
       const roomEnv = new RoomEnvironment();
       const envRT = pmrem.fromScene(roomEnv, 0.04);
       scene.environment = envRT.texture;
-      scene.environmentIntensity = 0.8;
+      scene.environmentIntensity = 0.7;
       (roomEnv as { dispose?: () => void }).dispose?.();
       pmrem.dispose();
       disposables.push({ dispose: () => envRT.dispose() });
@@ -345,11 +345,11 @@ export function EquipmentViewer() {
       const ledGroup = new THREE.Group();
       const ledColors = ['#36c7d0', '#36d17f'];
       for (let i = 0; i < 2; i += 1) {
-        const ledMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(ledColors[i]).multiplyScalar(2.1), toneMapped: false, transparent: true, opacity: 0.68 });
+        const ledMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(ledColors[i]).multiplyScalar(1.7), toneMapped: false, transparent: true, opacity: 0.4 });
         disposables.push(ledMat);
-        const ring = new THREE.Mesh(new THREE.TorusGeometry(1.36 + i * 0.26, 0.009, 10, 140), ledMat);
+        const ring = new THREE.Mesh(new THREE.TorusGeometry(1.34 + i * 0.24, 0.016, 10, 140), ledMat);
         ring.rotation.x = Math.PI / 2;
-        ring.position.y = 0.04 + i * 0.004;
+        ring.position.y = 0.035 + i * 0.004;
         ledGroup.add(ring);
         disposables.push(ring.geometry);
       }
@@ -380,7 +380,7 @@ export function EquipmentViewer() {
 
       // Luzes: 3 pontos cinematograficos + IBL.
       scene.add(new THREE.AmbientLight('#dff4ff', 0.12));
-      const key = new THREE.DirectionalLight('#fff3e0', 1.85);
+      const key = new THREE.DirectionalLight('#fff3e0', 1.5);
       key.position.set(4.5, 6, 4);
       if (cfg.shadow > 0) {
         key.castShadow = true;
@@ -396,7 +396,7 @@ export function EquipmentViewer() {
         key.shadow.radius = 4;
       }
       scene.add(key);
-      const fill = new THREE.DirectionalLight('#cfe9ff', 0.68);
+      const fill = new THREE.DirectionalLight('#cfe9ff', 0.5);
       fill.position.set(-4, 3, 5);
       scene.add(fill);
       const rimCyan = new THREE.DirectionalLight('#36c7d0', 1.5);
@@ -418,7 +418,7 @@ export function EquipmentViewer() {
         composer.setSize(width, height);
         composer.addPass(new RenderPass(scene, camera));
         if (cfg.bloom > 0) {
-          bloomPass = new UnrealBloomPass(new THREE.Vector2(width * cfg.bloom, height * cfg.bloom), 0.4, 0.55, 1.5);
+          bloomPass = new UnrealBloomPass(new THREE.Vector2(width * cfg.bloom, height * cfg.bloom), 0.18, 0.4, 2.2);
           composer.addPass(bloomPass);
         }
         if (cfg.smaa) composer.addPass(new SMAAPass());
