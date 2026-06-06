@@ -2,22 +2,57 @@
 
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
+import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass.js';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { BRAND } from '@/domain/brand';
 
-function labelTexture(text: string) {
-  const canvas = document.createElement('canvas');
-  canvas.width = 512;
-  canvas.height = 160;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return new THREE.CanvasTexture(canvas);
-  ctx.fillStyle = '#36d17f';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = '#04140b';
-  ctx.font = 'bold 54px Arial';
-  ctx.fillText(text, 32, 94);
-  ctx.font = '22px Arial';
-  ctx.fillText('PET inteligente', 34, 126);
-  return new THREE.CanvasTexture(canvas);
+type Tier = 'high' | 'medium' | 'low';
+
+interface TierConfig {
+  dpr: number;
+  shadow: number; // 0 = off
+  bloom: number; // resolution scale, 0 = off
+  smaa: boolean;
+  dof: boolean;
+  bottles: number;
+  transmission: boolean;
+}
+
+const TIERS: Record<Tier, TierConfig> = {
+  high: { dpr: 2, shadow: 2048, bloom: 1, smaa: true, dof: true, bottles: 10, transmission: true },
+  medium: { dpr: 1.5, shadow: 1024, bloom: 0.5, smaa: true, dof: false, bottles: 6, transmission: true },
+  low: { dpr: 1, shadow: 0, bloom: 0, smaa: false, dof: false, bottles: 4, transmission: false }
+};
+
+function readQualityOverride(): Tier | null {
+  try {
+    const fromUrl = new URLSearchParams(window.location.search).get('q');
+    const value = (fromUrl || window.localStorage.getItem('ecoplastic:q') || '').toLowerCase();
+    if (value === 'high' || value === 'medium' || value === 'low') {
+      if (fromUrl) window.localStorage.setItem('ecoplastic:q', value);
+      return value;
+    }
+  } catch {}
+  return null;
+}
+
+function pickTier(gl: WebGLRenderingContext | WebGL2RenderingContext): Tier {
+  const override = readQualityOverride();
+  if (override) return override;
+  try {
+    const ext = gl.getExtension('WEBGL_debug_renderer_info');
+    const renderer = ext ? String(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)) : '';
+    if (/swiftshader|llvmpipe|microsoft basic|software/i.test(renderer)) return 'low';
+    if (/rtx|geforce gtx|radeon rx|radeon pro|apple m\d|arc a\d/i.test(renderer)) return 'high';
+    if (/intel|hd graphics|uhd graphics|iris|mali|adreno|powervr/i.test(renderer)) return 'medium';
+  } catch {}
+  return 'medium';
 }
 
 function webglSupported() {
@@ -27,6 +62,98 @@ function webglSupported() {
   } catch {
     return false;
   }
+}
+
+function brandLabelTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1024;
+  canvas.height = 320;
+  const ctx = canvas.getContext('2d');
+  if (ctx) {
+    const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    grad.addColorStop(0, '#3ee08c');
+    grad.addColorStop(1, '#1f9f5a');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#04140b';
+    ctx.font = '700 108px Inter, Arial, sans-serif';
+    ctx.fillText(BRAND.name, 56, 170);
+    ctx.font = '500 44px Inter, Arial, sans-serif';
+    ctx.globalAlpha = 0.78;
+    ctx.fillText('PET inteligente', 60, 232);
+  }
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = 8;
+  return texture;
+}
+
+function screenTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 640;
+  canvas.height = 384;
+  const ctx = canvas.getContext('2d');
+  if (ctx) {
+    ctx.fillStyle = '#04171a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#36d17f';
+    ctx.fillRect(0, 0, canvas.width, 70);
+    ctx.fillStyle = '#04140b';
+    ctx.font = '700 38px Inter, Arial, sans-serif';
+    ctx.fillText(BRAND.name, 22, 50);
+    ctx.fillStyle = '#7ef0b6';
+    ctx.font = '600 26px Inter, Arial, sans-serif';
+    ctx.fillText('PET reciclado hoje', 24, 132);
+    ctx.fillStyle = '#eafff4';
+    ctx.font = '800 96px Inter, Arial, sans-serif';
+    ctx.fillText('12,4 kg', 22, 230);
+    // barra de progresso
+    ctx.fillStyle = '#0c3a3f';
+    ctx.fillRect(24, 280, 592, 26);
+    ctx.fillStyle = '#36c7d0';
+    ctx.fillRect(24, 280, 430, 26);
+    ctx.fillStyle = '#5fe0a0';
+    ctx.font = '600 24px Inter, Arial, sans-serif';
+    ctx.fillText('meta mensal 72%', 24, 344);
+  }
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = 8;
+  return texture;
+}
+
+function radialAlphaTexture(inner: string, outer: string) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+  if (ctx) {
+    const grad = ctx.createRadialGradient(128, 128, 8, 128, 128, 126);
+    grad.addColorStop(0, inner);
+    grad.addColorStop(1, outer);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 256, 256);
+  }
+  const texture = new THREE.CanvasTexture(canvas);
+  return texture;
+}
+
+function bottleGeometry() {
+  const profile = [
+    [0.0, 0.0],
+    [0.085, 0.0],
+    [0.092, 0.03],
+    [0.092, 0.3],
+    [0.072, 0.37],
+    [0.03, 0.43],
+    [0.028, 0.5],
+    [0.035, 0.52],
+    [0.035, 0.57],
+    [0.0, 0.57]
+  ].map(([x, y]) => new THREE.Vector2(x, y));
+  const geo = new THREE.LatheGeometry(profile, 22);
+  geo.computeVertexNormals();
+  return geo;
 }
 
 export function EquipmentViewer() {
@@ -39,168 +166,383 @@ export function EquipmentViewer() {
 
     let frame = 0;
     let renderer: THREE.WebGLRenderer | null = null;
-    let ok = true;
+    let sceneForCleanup: THREE.Scene | null = null;
+    let disposed = false;
+    const disposables: Array<{ dispose: () => void }> = [];
+    const cleanups: Array<() => void> = [];
+
+    const teardown = () => {
+      if (frame) cancelAnimationFrame(frame);
+      frame = 0;
+      cleanups.forEach((fn) => {
+        try {
+          fn();
+        } catch {}
+      });
+      cleanups.length = 0;
+      disposables.forEach((item) => {
+        try {
+          item.dispose();
+        } catch {}
+      });
+      disposables.length = 0;
+      if (sceneForCleanup) {
+        const seen = new Set<unknown>();
+        const texKeys = ['map', 'emissiveMap', 'roughnessMap', 'metalnessMap', 'normalMap', 'aoMap', 'clearcoatMap'] as const;
+        sceneForCleanup.traverse((obj) => {
+          const mesh = obj as THREE.Mesh;
+          if (mesh.geometry && !seen.has(mesh.geometry)) {
+            seen.add(mesh.geometry);
+            mesh.geometry.dispose();
+          }
+          const material = mesh.material;
+          const mats = Array.isArray(material) ? material : material ? [material] : [];
+          mats.forEach((mat) => {
+            if (seen.has(mat)) return;
+            seen.add(mat);
+            const record = mat as unknown as Record<string, { isTexture?: boolean; dispose?: () => void } | undefined>;
+            texKeys.forEach((key) => {
+              const tex = record[key];
+              if (tex && tex.isTexture && !seen.has(tex)) {
+                seen.add(tex);
+                tex.dispose?.();
+              }
+            });
+            mat.dispose();
+          });
+        });
+        sceneForCleanup = null;
+      }
+      if (renderer) {
+        renderer.dispose();
+        if (renderer.domElement.parentNode === host) host.removeChild(renderer.domElement);
+        renderer = null;
+      }
+    };
 
     try {
       if (!webglSupported()) throw new Error('WebGL indisponivel');
-      const scene = new THREE.Scene();
-      scene.background = new THREE.Color('#071114');
-      const camera = new THREE.PerspectiveCamera(42, host.clientWidth / host.clientHeight, 0.1, 100);
-      camera.position.set(4, 3.2, 6);
-      camera.lookAt(0, 1.2, 0);
 
-      renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      renderer.setSize(host.clientWidth, host.clientHeight);
-      renderer.shadowMap.enabled = true;
+      const width = host.clientWidth || 1;
+      const height = host.clientHeight || 1;
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance', stencil: false });
+      const tier = pickTier(renderer.getContext());
+      const cfg = TIERS[tier];
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, cfg.dpr));
+      renderer.setSize(width, height);
+      renderer.setClearColor(0x000000, 0);
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.0;
+      renderer.shadowMap.enabled = cfg.shadow > 0;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       host.appendChild(renderer.domElement);
 
-      const ambient = new THREE.AmbientLight('#dff9ef', 1.4);
-      scene.add(ambient);
-      const key = new THREE.DirectionalLight('#ffffff', 2.4);
-      key.position.set(5, 6, 4);
-      key.castShadow = true;
-      scene.add(key);
-      const rim = new THREE.PointLight('#36c7d0', 9, 10);
-      rim.position.set(-3, 2, -2);
-      scene.add(rim);
+      const scene = new THREE.Scene();
+      sceneForCleanup = scene;
+      const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
+      camera.position.set(3.7, 2.8, 5.1);
 
-      const floor = new THREE.Mesh(
-        new THREE.CircleGeometry(3.6, 96),
-        new THREE.MeshStandardMaterial({ color: '#0d1f22', roughness: .72, metalness: .08 })
-      );
-      floor.rotation.x = -Math.PI / 2;
-      floor.receiveShadow = true;
-      scene.add(floor);
+      // IBL procedural (RoomEnvironment) -> reflexos realistas, sem rede.
+      const pmrem = new THREE.PMREMGenerator(renderer);
+      const roomEnv = new RoomEnvironment();
+      const envRT = pmrem.fromScene(roomEnv, 0.04);
+      scene.environment = envRT.texture;
+      scene.environmentIntensity = 0.8;
+      (roomEnv as { dispose?: () => void }).dispose?.();
+      pmrem.dispose();
+      disposables.push({ dispose: () => envRT.dispose() });
 
-      const body = new THREE.Mesh(
-        new THREE.BoxGeometry(2.2, 3.1, 1.35),
-        new THREE.MeshStandardMaterial({ color: '#eef5f1', roughness: .38, metalness: .08 })
-      );
+      const model = new THREE.Group();
+      scene.add(model);
+
+      // Materiais premium (PBR).
+      const shellMat = new THREE.MeshPhysicalMaterial({ color: '#f4f8f5', roughness: 0.3, metalness: 0, clearcoat: 0.85, clearcoatRoughness: 0.1, envMapIntensity: 1.0 });
+      const metalMat = new THREE.MeshStandardMaterial({ color: '#2a3a40', roughness: 0.34, metalness: 0.95, envMapIntensity: 1.15 });
+      const darkMat = new THREE.MeshStandardMaterial({ color: '#0a1417', roughness: 0.5, metalness: 0.4, envMapIntensity: 0.8 });
+      const acrylicMat = cfg.transmission
+        ? new THREE.MeshPhysicalMaterial({ color: '#ffffff', roughness: 0.05, metalness: 0, transmission: 1, ior: 1.46, thickness: 0.4, clearcoat: 1, clearcoatRoughness: 0.04, attenuationColor: new THREE.Color('#bdeef0'), attenuationDistance: 1.5, envMapIntensity: 1 })
+        : new THREE.MeshPhysicalMaterial({ color: '#cdeef2', roughness: 0.12, metalness: 0, transparent: true, opacity: 0.42, envMapIntensity: 1 });
+      const screenMat = new THREE.MeshStandardMaterial({ color: '#02100f', emissive: new THREE.Color('#ffffff'), emissiveMap: screenTexture(), emissiveIntensity: 2.4, roughness: 0.4, metalness: 0 });
+      const labelMat = new THREE.MeshStandardMaterial({ map: brandLabelTexture(), roughness: 0.42, metalness: 0, envMapIntensity: 0.6 });
+      [shellMat, metalMat, darkMat, acrylicMat, screenMat, labelMat].forEach((m) => disposables.push(m));
+
+      // Corpo / shell.
+      const body = new THREE.Mesh(new RoundedBoxGeometry(2.2, 3.1, 1.35, 4, 0.07), shellMat);
       body.position.y = 1.55;
       body.castShadow = true;
       body.receiveShadow = true;
-      scene.add(body);
+      model.add(body);
 
-      const header = new THREE.Mesh(
-        new THREE.BoxGeometry(2.25, .48, 1.4),
-        new THREE.MeshStandardMaterial({ map: labelTexture(BRAND.name), roughness: .4 })
-      );
-      header.position.set(0, 2.96, .04);
+      // Recuo de painel frontal (seam).
+      const panelInset = new THREE.Mesh(new RoundedBoxGeometry(1.74, 2.2, 0.06, 3, 0.04), darkMat);
+      panelInset.position.set(0, 1.5, 0.66);
+      model.add(panelInset);
+
+      // Header com a marca.
+      const header = new THREE.Mesh(new RoundedBoxGeometry(2.26, 0.5, 1.4, 3, 0.06), labelMat);
+      header.position.set(0, 2.98, 0.02);
       header.castShadow = true;
-      scene.add(header);
+      model.add(header);
 
-      const slot = new THREE.Mesh(
-        new THREE.BoxGeometry(1.28, .32, .08),
-        new THREE.MeshStandardMaterial({ color: '#071114', roughness: .25, metalness: .18 })
-      );
-      slot.position.set(0, 2.05, .71);
-      scene.add(slot);
+      // Slot de entrada (recuado + labio).
+      const slot = new THREE.Mesh(new RoundedBoxGeometry(1.3, 0.3, 0.12, 3, 0.05), darkMat);
+      slot.position.set(0, 2.28, 0.69);
+      model.add(slot);
 
-      const screen = new THREE.Mesh(
-        new THREE.BoxGeometry(1.06, .58, .08),
-        new THREE.MeshStandardMaterial({ color: '#08242a', emissive: '#0a5860', emissiveIntensity: .45 })
-      );
-      screen.position.set(0, 1.44, .72);
-      scene.add(screen);
+      // Tela com moldura (bezel).
+      const bezel = new THREE.Mesh(new RoundedBoxGeometry(1.22, 0.74, 0.1, 3, 0.04), darkMat);
+      bezel.position.set(0, 1.74, 0.69);
+      model.add(bezel);
+      const screen = new THREE.Mesh(new THREE.PlaneGeometry(1.04, 0.6), screenMat);
+      screen.position.set(0, 1.74, 0.752);
+      model.add(screen);
 
-      const windowMesh = new THREE.Mesh(
-        new THREE.BoxGeometry(1.46, .76, .08),
-        new THREE.MeshPhysicalMaterial({ color: '#d7ffff', roughness: .1, transmission: .35, transparent: true, opacity: .5 })
-      );
-      windowMesh.position.set(0, .76, .72);
-      scene.add(windowMesh);
+      // Janela acrilica (mostra as garrafas).
+      const windowFrame = new THREE.Mesh(new RoundedBoxGeometry(1.5, 0.92, 0.1, 3, 0.05), metalMat);
+      windowFrame.position.set(0, 0.92, 0.68);
+      model.add(windowFrame);
+      const windowGlass = new THREE.Mesh(new RoundedBoxGeometry(1.34, 0.78, 0.12, 3, 0.04), acrylicMat);
+      windowGlass.position.set(0, 0.92, 0.71);
+      model.add(windowGlass);
 
-      const compactor = new THREE.Mesh(
-        new THREE.BoxGeometry(1.32, .18, 1.03),
-        new THREE.MeshStandardMaterial({ color: '#24343a', metalness: .55, roughness: .28 })
-      );
-      compactor.position.set(0, .82, .06);
-      scene.add(compactor);
+      // Hopper / compactador metalico.
+      const compactor = new THREE.Mesh(new RoundedBoxGeometry(1.34, 0.2, 1.04, 3, 0.04), metalMat);
+      compactor.position.set(0, 0.86, 0.04);
+      compactor.castShadow = true;
+      model.add(compactor);
 
-      const bottleMaterial = new THREE.MeshPhysicalMaterial({ color: '#9df2ff', transparent: true, opacity: .55, roughness: .05, transmission: .3 });
-      const bottles: THREE.Mesh[] = [];
-      for (let i = 0; i < 10; i += 1) {
-        const bottle = new THREE.Mesh(new THREE.CapsuleGeometry(.065, .36, 6, 12), bottleMaterial);
-        bottle.position.set(-.62 + (i % 5) * .31, .38 + Math.floor(i / 5) * .13, .42);
-        bottle.rotation.z = (i % 2 ? -.8 : .7);
-        bottles.push(bottle);
-        scene.add(bottle);
-      }
-
-      const base = new THREE.Mesh(
-        new THREE.BoxGeometry(2.45, .28, 1.58),
-        new THREE.MeshStandardMaterial({ color: '#1b2d32', roughness: .42, metalness: .14 })
-      );
-      base.position.y = .14;
+      // Plinto / base chanfrada.
+      const base = new THREE.Mesh(new RoundedBoxGeometry(2.45, 0.3, 1.6, 4, 0.05), metalMat);
+      base.position.y = 0.16;
       base.castShadow = true;
-      scene.add(base);
+      base.receiveShadow = true;
+      model.add(base);
 
-      const rings = new THREE.Group();
-      for (let i = 0; i < 3; i += 1) {
-        const ring = new THREE.Mesh(
-          new THREE.TorusGeometry(1.78 + i * .32, .006, 8, 96),
-          new THREE.MeshBasicMaterial({ color: i === 1 ? '#f3b35b' : '#36c7d0', transparent: true, opacity: .42 - i * .08 })
-        );
-        ring.rotation.x = Math.PI / 2;
-        ring.position.y = .035 + i * .002;
-        rings.add(ring);
+      // Garrafas PET (instanced) atras da janela.
+      const bottleGeo = bottleGeometry();
+      const bottleMat = cfg.transmission
+        ? new THREE.MeshPhysicalMaterial({ color: '#bff6ff', roughness: 0.06, metalness: 0, transmission: 0.9, ior: 1.5, thickness: 0.15, clearcoat: 0.4, attenuationColor: new THREE.Color('#9df2ff'), attenuationDistance: 0.5, envMapIntensity: 1 })
+        : new THREE.MeshPhysicalMaterial({ color: '#aee9f2', roughness: 0.25, metalness: 0, transparent: true, opacity: 0.7, envMapIntensity: 0.8 });
+      disposables.push(bottleGeo, bottleMat);
+      const bottles = new THREE.InstancedMesh(bottleGeo, bottleMat, cfg.bottles);
+      const dummy = new THREE.Object3D();
+      for (let i = 0; i < cfg.bottles; i += 1) {
+        const col = i % 4;
+        const rowIndex = Math.floor(i / 4);
+        dummy.position.set(-0.5 + col * 0.34, 0.58 + rowIndex * 0.14, 0.34 - rowIndex * 0.12);
+        dummy.rotation.set(Math.PI / 2 + (i % 2 ? 0.25 : -0.3), 0, (i % 3) * 0.4);
+        const s = 0.85 + (i % 3) * 0.12;
+        dummy.scale.set(s, s, s);
+        dummy.updateMatrix();
+        bottles.setMatrixAt(i, dummy.matrix);
       }
-      scene.add(rings);
+      bottles.instanceMatrix.needsUpdate = true;
+      model.add(bottles);
 
+      // Anel LED de acento (bloom).
+      const ledGroup = new THREE.Group();
+      const ledColors = ['#36c7d0', '#36d17f'];
+      for (let i = 0; i < 2; i += 1) {
+        const ledMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(ledColors[i]).multiplyScalar(2.1), toneMapped: false, transparent: true, opacity: 0.68 });
+        disposables.push(ledMat);
+        const ring = new THREE.Mesh(new THREE.TorusGeometry(1.36 + i * 0.26, 0.009, 10, 140), ledMat);
+        ring.rotation.x = Math.PI / 2;
+        ring.position.y = 0.04 + i * 0.004;
+        ledGroup.add(ring);
+        disposables.push(ring.geometry);
+      }
+      scene.add(ledGroup);
+
+      // Chao de estudio (levemente reflexivo) + gradiente radial.
+      const floorTex = radialAlphaTexture('rgba(30,90,96,0.55)', 'rgba(3,9,11,1)');
+      floorTex.colorSpace = THREE.SRGBColorSpace;
+      disposables.push(floorTex);
+      const floorMat = new THREE.MeshPhysicalMaterial({ map: floorTex, roughness: 0.3, metalness: 0, clearcoat: 0.3, clearcoatRoughness: 0.2, envMapIntensity: 0.6 });
+      disposables.push(floorMat);
+      const floor = new THREE.Mesh(new THREE.CircleGeometry(7, 96), floorMat);
+      floor.rotation.x = -Math.PI / 2;
+      floor.receiveShadow = true;
+      scene.add(floor);
+      disposables.push(floor.geometry);
+
+      // Sombra de contato macia (fake AO disc).
+      const contactTex = radialAlphaTexture('rgba(0,0,0,0.55)', 'rgba(0,0,0,0)');
+      disposables.push(contactTex);
+      const contactMat = new THREE.MeshBasicMaterial({ map: contactTex, transparent: true, depthWrite: false, toneMapped: false });
+      disposables.push(contactMat);
+      const contact = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 2.6), contactMat);
+      contact.rotation.x = -Math.PI / 2;
+      contact.position.y = 0.02;
+      scene.add(contact);
+      disposables.push(contact.geometry);
+
+      // Luzes: 3 pontos cinematograficos + IBL.
+      scene.add(new THREE.AmbientLight('#dff4ff', 0.12));
+      const key = new THREE.DirectionalLight('#fff3e0', 1.85);
+      key.position.set(4.5, 6, 4);
+      if (cfg.shadow > 0) {
+        key.castShadow = true;
+        key.shadow.mapSize.set(cfg.shadow, cfg.shadow);
+        key.shadow.camera.near = 1;
+        key.shadow.camera.far = 22;
+        key.shadow.camera.left = -3.2;
+        key.shadow.camera.right = 3.2;
+        key.shadow.camera.top = 3.6;
+        key.shadow.camera.bottom = -1;
+        key.shadow.bias = -0.0003;
+        key.shadow.normalBias = 0.03;
+        key.shadow.radius = 4;
+      }
+      scene.add(key);
+      const fill = new THREE.DirectionalLight('#cfe9ff', 0.68);
+      fill.position.set(-4, 3, 5);
+      scene.add(fill);
+      const rimCyan = new THREE.DirectionalLight('#36c7d0', 1.5);
+      rimCyan.position.set(-4, 3.5, -4);
+      scene.add(rimCyan);
+      const rimAmber = new THREE.DirectionalLight('#f3b35b', 1.2);
+      rimAmber.position.set(4, 2.4, -4.5);
+      scene.add(rimAmber);
+
+      // Pos-processamento.
       const reduceMotion = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const useComposer = cfg.bloom > 0 || cfg.smaa;
+      let composer: EffectComposer | null = null;
+      let bloomPass: UnrealBloomPass | null = null;
+      if (useComposer) {
+        const rt = new THREE.WebGLRenderTarget(width, height, { type: THREE.HalfFloatType, samples: tier === 'high' ? 4 : 0 });
+        composer = new EffectComposer(renderer, rt);
+        composer.setPixelRatio(Math.min(window.devicePixelRatio || 1, cfg.dpr));
+        composer.setSize(width, height);
+        composer.addPass(new RenderPass(scene, camera));
+        if (cfg.bloom > 0) {
+          bloomPass = new UnrealBloomPass(new THREE.Vector2(width * cfg.bloom, height * cfg.bloom), 0.4, 0.55, 1.5);
+          composer.addPass(bloomPass);
+        }
+        if (cfg.smaa) composer.addPass(new SMAAPass());
+        composer.addPass(new OutputPass());
+        disposables.push({ dispose: () => composer?.dispose() });
+        if (bloomPass) disposables.push({ dispose: () => bloomPass?.dispose() });
+      }
 
-      const renderOnce = () => renderer && renderer.render(scene, camera);
+      // Controles (drag) + auto-orbita.
+      const controls = new OrbitControls(camera, renderer.domElement);
+      controls.target.set(0, 1.4, 0);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.06;
+      controls.enablePan = false;
+      controls.minDistance = 3.6;
+      controls.maxDistance = 9.5;
+      controls.minPolarAngle = 0.6;
+      controls.maxPolarAngle = Math.PI / 2.05;
+      controls.autoRotate = !reduceMotion;
+      controls.autoRotateSpeed = 0.55;
+      controls.update();
+      disposables.push({ dispose: () => controls.dispose() });
+
+      const renderOnce = () => {
+        if (!renderer) return;
+        if (composer) composer.render();
+        else renderer.render(scene, camera);
+      };
+
+      const clock = new THREE.Clock();
+      let visible = true;
+      const fpsSamples: number[] = [];
+      let demotions = 0;
 
       const animate = () => {
         frame = requestAnimationFrame(animate);
-        body.rotation.y = Math.sin(Date.now() / 3200) * .08;
-        header.rotation.y = body.rotation.y;
-        slot.rotation.y = body.rotation.y;
-        screen.rotation.y = body.rotation.y;
-        windowMesh.rotation.y = body.rotation.y;
-        compactor.rotation.y = body.rotation.y;
-        base.rotation.y = body.rotation.y;
-        rings.rotation.z += .002;
-        bottles.forEach((bottle, index) => {
-          bottle.rotation.y += .01 + index * .0005;
-        });
+        const dt = clock.getDelta();
+        // respiracao sutil de FOV (nao briga com OrbitControls).
+        camera.fov = 40 + Math.sin(clock.elapsedTime * 0.22) * 1.1;
+        camera.updateProjectionMatrix();
+        ledGroup.rotation.z += dt * 0.12;
+        controls.update();
         renderOnce();
-      };
 
-      if (reduceMotion) {
-        renderOnce();
-      } else {
-        animate();
-      }
+        // Guard de FPS: degrada se travar.
+        if (dt > 0) {
+          fpsSamples.push(1 / dt);
+          if (fpsSamples.length >= 90) {
+            const avg = fpsSamples.reduce((s, v) => s + v, 0) / fpsSamples.length;
+            fpsSamples.length = 0;
+            if (avg < 30 && demotions < 2) {
+              demotions += 1;
+              if (bloomPass && bloomPass.enabled) bloomPass.enabled = false;
+              else if (renderer) {
+                renderer.shadowMap.enabled = false;
+                scene.traverse((o) => {
+                  const light = o as THREE.DirectionalLight;
+                  if (light.isDirectionalLight) light.castShadow = false;
+                });
+              }
+            } else if (avg < 20) {
+              // piso: congela num frame bonito.
+              if (frame) cancelAnimationFrame(frame);
+              frame = 0;
+              renderOnce();
+            }
+          }
+        }
+      };
 
       const resize = () => {
-        if (!host || !renderer) return;
-        camera.aspect = host.clientWidth / host.clientHeight;
+        if (!renderer || !host) return;
+        const w = host.clientWidth || 1;
+        const h = host.clientHeight || 1;
+        camera.aspect = w / h;
         camera.updateProjectionMatrix();
-        renderer.setSize(host.clientWidth, host.clientHeight);
+        renderer.setSize(w, h);
+        composer?.setSize(w, h);
+        renderOnce();
       };
       window.addEventListener('resize', resize);
+      cleanups.push(() => window.removeEventListener('resize', resize));
+
+      const start = () => {
+        if (!frame && visible && !reduceMotion && !disposed) animate();
+      };
+      const stop = () => {
+        if (frame) cancelAnimationFrame(frame);
+        frame = 0;
+      };
+
+      // Pausa fora da tela / aba oculta.
+      const io = new IntersectionObserver((entries) => {
+        visible = entries[0]?.isIntersecting ?? true;
+        if (visible) start();
+        else stop();
+      }, { threshold: 0.05 });
+      io.observe(host);
+      cleanups.push(() => io.disconnect());
+
+      const onVisibility = () => {
+        if (document.hidden) stop();
+        else start();
+      };
+      document.addEventListener('visibilitychange', onVisibility);
+      cleanups.push(() => document.removeEventListener('visibilitychange', onVisibility));
+
+      if (reduceMotion) {
+        controls.update();
+        renderOnce();
+      } else {
+        start();
+      }
 
       return () => {
-        if (frame) cancelAnimationFrame(frame);
-        window.removeEventListener('resize', resize);
-        renderer?.dispose();
-        if (renderer && renderer.domElement.parentNode === host) {
-          host.removeChild(renderer.domElement);
-        }
+        disposed = true;
+        teardown();
       };
     } catch (error) {
       console.warn('[EcoPlastic] falha ao iniciar o 3D', error);
-      if (frame) cancelAnimationFrame(frame);
-      renderer?.dispose();
-      ok = false;
-    }
-
-    if (!ok) {
-      // Falha de WebGL/3D: cai para o poster estatico. Caso de erro pontual, nao re-render em cascata.
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setFailed(true);
+      teardown();
+      if (!disposed) {
+        setFailed(true);
+      }
     }
   }, []);
 
