@@ -18,7 +18,7 @@ const NAV = [
 export function MoradorShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { state, actions } = useEcoPlastic();
+  const { state, actions, lastStorageMessage } = useEcoPlastic();
   const { notify } = useToast();
   const morador = moradorAtual(state);
 
@@ -47,7 +47,10 @@ export function MoradorShell({ children }: { children: React.ReactNode }) {
             <LogOut size={17} />
           </button>
         </header>
-        <section className="phone-content" id="conteudo">{children}</section>
+        <section className="phone-content" id="conteudo">
+          {lastStorageMessage ? <small className="storage-note">{lastStorageMessage}</small> : null}
+          {children}
+        </section>
         <nav className="phone-nav" aria-label="Navegacao do morador">
           {NAV.map((item) => {
             const Icon = item.icon;

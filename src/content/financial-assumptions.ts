@@ -37,6 +37,16 @@ export const PRECO_KG = {
   note: 'Precos regionais demonstrativos, dentro da faixa praticada no Brasil (~R$ 1,50 a 4,00/kg).'
 } as const;
 
+/** Despesa mensal de remocao de residuos evitada (linha de base "Antes"). */
+export const CUSTO_REMOCAO_MES: FinancialAssumption = {
+  label: 'Despesa mensal evitada com remocao de residuos',
+  value: 320,
+  unit: 'R$/mes',
+  source: 'Estimativa demonstrativa do custo de remocao/descarte para um predio do porte do cenario.',
+  sourceUrl: '',
+  note: 'Valor demonstrativo (linha de base "Antes"); varia por cidade, porte e contrato de coleta.'
+};
+
 /** Reparticao da receita entre condominio e EcoPlastic. HIPOTESE de negocio. */
 export const SPLIT_CONDOMINIO: FinancialAssumption = {
   label: 'Reparticao da receita (condominio / EcoPlastic)',

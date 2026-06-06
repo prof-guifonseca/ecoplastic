@@ -5,7 +5,9 @@ import { metricasEsg, totaisMensais } from './selectors';
 import { PAPER, PAPER_BRAND, PAPER_BRAND_INK } from './theme';
 import type { EcoPlasticState } from './types';
 
-export function saveEsgPdf(state: EcoPlasticState) {
+// Desenho separado do save: buildEsgDoc e testavel em ambiente node
+// (output('arraybuffer')); saveEsgPdf so adiciona o doc.save() (Blob/DOM).
+export function buildEsgDoc(state: EcoPlasticState) {
   const doc = new jsPDF({ unit: 'pt', format: 'a4' });
   const metrics = metricasEsg(state);
   const width = doc.internal.pageSize.getWidth();
@@ -89,6 +91,11 @@ export function saveEsgPdf(state: EcoPlasticState) {
   doc.setTextColor(145, 145, 145);
   doc.text(`Gerado por ${BRAND.name} - plataforma Recycle-as-a-Service para condominios`, 40, 822);
 
+  return doc;
+}
+
+export function saveEsgPdf(state: EcoPlasticState) {
+  const doc = buildEsgDoc(state);
   const filename = `ESG_${state.condominio.nome.replace(/\W+/g, '_')}_${new Date().toISOString().slice(0, 7)}.pdf`;
   doc.save(filename);
 }

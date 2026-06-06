@@ -47,6 +47,7 @@ export function EcoPlasticProvider({ children }: { children: React.ReactNode }) 
   const stateRef = useRef(state);
   const [hydrated, setHydrated] = useState(false);
   const [lastStorageMessage, setLastStorageMessage] = useState<string | null>(null);
+  const persistFailedRef = useRef(false);
 
   useEffect(() => {
     stateRef.current = state;
@@ -67,7 +68,17 @@ export function EcoPlasticProvider({ children }: { children: React.ReactNode }) 
   }, []);
 
   useEffect(() => {
-    if (hydrated) saveState(state);
+    if (!hydrated) return;
+    const result = saveState(state);
+    if (!result.ok) {
+      persistFailedRef.current = true;
+      setLastStorageMessage(`Nao foi possivel salvar localmente (${result.error}). Os dados existem so nesta sessao.`);
+    } else if (persistFailedRef.current) {
+      // So limpa quando estamos saindo de uma falha de persistencia: nao apaga
+      // avisos de outra aba nem de carga invalida.
+      persistFailedRef.current = false;
+      setLastStorageMessage(null);
+    }
   }, [hydrated, state]);
 
   useEffect(() => {

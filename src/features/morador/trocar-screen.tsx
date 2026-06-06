@@ -1,6 +1,7 @@
 'use client';
 
 import { Button, EmptyState } from '@/components/ui/primitives';
+import { cn } from '@/lib/utils';
 import { num } from '@/domain/format';
 import { moradorAtual } from '@/domain/selectors';
 import { useEcoPlastic } from '@/store/ecoplastic-store';
@@ -39,7 +40,7 @@ export function TrocarMoradorScreen() {
         {state.recompensas.map((recompensa) => {
           const pode = morador.pontos >= recompensa.custoPontos && recompensa.estoque > 0;
           return (
-            <div className="p-reward" key={recompensa.id}>
+            <div className={cn('p-reward', pode && 'affordable', recompensa.estoque <= 0 && 'sold-out')} key={recompensa.id}>
               <div className="ico">{rewardIcon(recompensa.ico)}</div>
               <div className="ttl">{recompensa.titulo}</div>
               <div className="desc">{recompensa.descricao} · {recompensa.estoque} em estoque</div>
