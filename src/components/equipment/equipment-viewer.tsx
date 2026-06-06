@@ -138,24 +138,6 @@ function radialAlphaTexture(inner: string, outer: string) {
   return texture;
 }
 
-function bottleGeometry() {
-  const profile = [
-    [0.0, 0.0],
-    [0.085, 0.0],
-    [0.092, 0.03],
-    [0.092, 0.3],
-    [0.072, 0.37],
-    [0.03, 0.43],
-    [0.028, 0.5],
-    [0.035, 0.52],
-    [0.035, 0.57],
-    [0.0, 0.57]
-  ].map(([x, y]) => new THREE.Vector2(x, y));
-  const geo = new THREE.LatheGeometry(profile, 22);
-  geo.computeVertexNormals();
-  return geo;
-}
-
 export function EquipmentViewer() {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const [failed, setFailed] = useState(false);
@@ -286,10 +268,21 @@ export function EquipmentViewer() {
       header.castShadow = true;
       model.add(header);
 
-      // Slot de entrada (recuado + labio).
-      const slot = new THREE.Mesh(new RoundedBoxGeometry(1.3, 0.3, 0.12, 3, 0.05), darkMat);
-      slot.position.set(0, 2.28, 0.69);
-      model.add(slot);
+      // Slot de entrada do PET: abertura escura recuada + moldura metalica.
+      const holeMat = new THREE.MeshStandardMaterial({ color: '#03090b', roughness: 0.95, metalness: 0 });
+      disposables.push(holeMat);
+      const slotHole = new THREE.Mesh(new THREE.BoxGeometry(1.34, 0.32, 0.06), holeMat);
+      slotHole.position.set(0, 2.3, 0.63);
+      model.add(slotHole);
+      const slotBar = (w: number, h: number, x: number, y: number) => {
+        const b = new THREE.Mesh(new RoundedBoxGeometry(w, h, 0.12, 2, 0.025), metalMat);
+        b.position.set(x, y, 0.7);
+        model.add(b);
+      };
+      slotBar(1.5, 0.07, 0, 2.49);
+      slotBar(1.5, 0.07, 0, 2.11);
+      slotBar(0.07, 0.45, -0.715, 2.3);
+      slotBar(0.07, 0.45, 0.715, 2.3);
 
       // Tela com moldura (bezel).
       const bezel = new THREE.Mesh(new RoundedBoxGeometry(1.22, 0.74, 0.1, 3, 0.04), darkMat);
@@ -320,26 +313,20 @@ export function EquipmentViewer() {
       base.receiveShadow = true;
       model.add(base);
 
-      // Garrafas PET (instanced) atras da janela.
-      const bottleGeo = bottleGeometry();
-      const bottleMat = cfg.transmission
-        ? new THREE.MeshPhysicalMaterial({ color: '#bff6ff', roughness: 0.06, metalness: 0, transmission: 0.9, ior: 1.5, thickness: 0.15, clearcoat: 0.4, attenuationColor: new THREE.Color('#9df2ff'), attenuationDistance: 0.5, envMapIntensity: 1 })
-        : new THREE.MeshPhysicalMaterial({ color: '#aee9f2', roughness: 0.25, metalness: 0, transparent: true, opacity: 0.7, envMapIntensity: 0.8 });
-      disposables.push(bottleGeo, bottleMat);
-      const bottles = new THREE.InstancedMesh(bottleGeo, bottleMat, cfg.bottles);
-      const dummy = new THREE.Object3D();
-      for (let i = 0; i < cfg.bottles; i += 1) {
-        const col = i % 4;
-        const rowIndex = Math.floor(i / 4);
-        dummy.position.set(-0.5 + col * 0.34, 0.58 + rowIndex * 0.14, 0.34 - rowIndex * 0.12);
-        dummy.rotation.set(Math.PI / 2 + (i % 2 ? 0.25 : -0.3), 0, (i % 3) * 0.4);
-        const s = 0.85 + (i % 3) * 0.12;
-        dummy.scale.set(s, s, s);
-        dummy.updateMatrix();
-        bottles.setMatrixAt(i, dummy.matrix);
-      }
-      bottles.instanceMatrix.needsUpdate = true;
-      model.add(bottles);
+      // Dispenser lateral (portinhola para o staff retirar o PET prensado).
+      const seamMat = new THREE.MeshStandardMaterial({ color: '#0a1417', roughness: 0.7, metalness: 0.35, envMapIntensity: 0.8 });
+      const doorMat = new THREE.MeshPhysicalMaterial({ color: '#e9eff1', roughness: 0.4, metalness: 0, clearcoat: 0.6, clearcoatRoughness: 0.16, envMapIntensity: 0.9 });
+      disposables.push(seamMat, doorMat);
+      const doorSeam = new THREE.Mesh(new RoundedBoxGeometry(0.05, 1.5, 1.0, 3, 0.04), seamMat);
+      doorSeam.position.set(1.1, 1.02, 0);
+      model.add(doorSeam);
+      const sideDoor = new THREE.Mesh(new RoundedBoxGeometry(0.1, 1.36, 0.88, 3, 0.05), doorMat);
+      sideDoor.position.set(1.12, 1.02, 0);
+      sideDoor.castShadow = true;
+      model.add(sideDoor);
+      const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.56, 14), metalMat);
+      handle.position.set(1.19, 1.02, 0.3);
+      model.add(handle);
 
       // Chao de estudio (levemente reflexivo) + gradiente radial.
       const floorTex = radialAlphaTexture('rgba(30,90,96,0.55)', 'rgba(3,9,11,1)');
