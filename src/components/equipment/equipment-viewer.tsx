@@ -341,20 +341,6 @@ export function EquipmentViewer() {
       bottles.instanceMatrix.needsUpdate = true;
       model.add(bottles);
 
-      // Anel LED de acento (bloom).
-      const ledGroup = new THREE.Group();
-      const ledColors = ['#36c7d0', '#36d17f'];
-      for (let i = 0; i < 2; i += 1) {
-        const ledMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(ledColors[i]).multiplyScalar(1.7), toneMapped: false, transparent: true, opacity: 0.4 });
-        disposables.push(ledMat);
-        const ring = new THREE.Mesh(new THREE.TorusGeometry(1.34 + i * 0.24, 0.016, 10, 140), ledMat);
-        ring.rotation.x = Math.PI / 2;
-        ring.position.y = 0.035 + i * 0.004;
-        ledGroup.add(ring);
-        disposables.push(ring.geometry);
-      }
-      scene.add(ledGroup);
-
       // Chao de estudio (levemente reflexivo) + gradiente radial.
       const floorTex = radialAlphaTexture('rgba(30,90,96,0.55)', 'rgba(3,9,11,1)');
       floorTex.colorSpace = THREE.SRGBColorSpace;
@@ -437,10 +423,12 @@ export function EquipmentViewer() {
       controls.maxDistance = 9.5;
       controls.minPolarAngle = 0.6;
       controls.maxPolarAngle = Math.PI / 2.05;
-      controls.autoRotate = !reduceMotion;
-      controls.autoRotateSpeed = 0.55;
+      controls.autoRotate = false;
       controls.update();
       disposables.push({ dispose: () => controls.dispose() });
+
+      let renderRequested = true;
+      controls.addEventListener('change', () => { renderRequested = true; });
 
       const renderOnce = () => {
         if (!renderer) return;
@@ -453,20 +441,21 @@ export function EquipmentViewer() {
       const fpsSamples: number[] = [];
       let demotions = 0;
 
+      // Render sob demanda: estatico por padrao (sem auto-rotacao). So
+      // redesenha quando o usuario arrasta/zoom (OrbitControls com damping) ou
+      // quando algo pede um novo frame (resize / degradacao).
       const animate = () => {
         frame = requestAnimationFrame(animate);
         const dt = clock.getDelta();
-        // respiracao sutil de FOV (nao briga com OrbitControls).
-        camera.fov = 40 + Math.sin(clock.elapsedTime * 0.22) * 1.1;
-        camera.updateProjectionMatrix();
-        ledGroup.rotation.z += dt * 0.12;
-        controls.update();
+        const moved = controls.update();
+        if (!moved && !renderRequested) return;
+        renderRequested = false;
         renderOnce();
 
-        // Guard de FPS: degrada se travar.
-        if (dt > 0) {
+        // Guard de FPS: so enquanto renderiza (interacao); degrada sem travar.
+        if (dt > 0 && dt < 1) {
           fpsSamples.push(1 / dt);
-          if (fpsSamples.length >= 90) {
+          if (fpsSamples.length >= 50) {
             const avg = fpsSamples.reduce((s, v) => s + v, 0) / fpsSamples.length;
             fpsSamples.length = 0;
             if (avg < 30 && demotions < 2) {
@@ -479,11 +468,7 @@ export function EquipmentViewer() {
                   if (light.isDirectionalLight) light.castShadow = false;
                 });
               }
-            } else if (avg < 20) {
-              // piso: congela num frame bonito.
-              if (frame) cancelAnimationFrame(frame);
-              frame = 0;
-              renderOnce();
+              renderRequested = true;
             }
           }
         }
@@ -497,6 +482,7 @@ export function EquipmentViewer() {
         camera.updateProjectionMatrix();
         renderer.setSize(w, h);
         composer?.setSize(w, h);
+        renderRequested = true;
         renderOnce();
       };
       window.addEventListener('resize', resize);
@@ -526,12 +512,10 @@ export function EquipmentViewer() {
       document.addEventListener('visibilitychange', onVisibility);
       cleanups.push(() => document.removeEventListener('visibilitychange', onVisibility));
 
-      if (reduceMotion) {
-        controls.update();
-        renderOnce();
-      } else {
-        start();
-      }
+      // Estatico por padrao: renderiza um frame e deixa o usuario girar (drag).
+      // reduce-motion nao inicia o loop (start e no-op); o frame estatico fica.
+      renderOnce();
+      start();
 
       return () => {
         disposed = true;
