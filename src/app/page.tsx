@@ -1,18 +1,24 @@
 import Link from 'next/link';
-import { ArrowRight, Building2, Recycle, Smartphone, Wrench } from 'lucide-react';
+import { ArrowRight, Building2, Leaf, Recycle, Smartphone, Wrench } from 'lucide-react';
 import { BRAND } from '@/domain/brand';
+import { buildSeed } from '@/domain/seed';
+import { brl, dec, num } from '@/domain/format';
+import { metricasEsg, saldoCondominio } from '@/domain/selectors';
+
+// Numeros do cenario de demonstracao, calculados no build (export estatico).
+const demo = buildSeed();
+const metrics = metricasEsg(demo);
+const receita = saldoCondominio(demo);
 
 export default function HomePage() {
   return (
     <main className="landing">
       <section>
-        <p className="eyebrow-brand">
-          Recycle-as-a-Service
-        </p>
+        <p className="eyebrow-brand">Projeto FECCI 2026 · Recycle-as-a-Service</p>
         <h1>{BRAND.name}</h1>
-        <p>
-          Compactador inteligente de PET para condominios com pontos, recompensas,
-          gestao de coletas, simulador financeiro e relatorio ESG pronto para demonstracao.
+        <p className="landing-lead">
+          O compactador inteligente de PET que transforma o lixo do condominio em
+          pontos, recompensas e receita — com relatorio ESG e operacao 100% offline.
         </p>
         <div className="landing-actions">
           <Link className="btn primary" href="/app/login/?p=sindico">
@@ -31,8 +37,18 @@ export default function HomePage() {
           <div><b>QR</b><span>deposito simulado e rastreavel</span></div>
         </div>
       </section>
-      <section className="medal" aria-hidden="true">
-        <div className="mark"><Recycle /></div>
+      <section className="landing-showcase" aria-label="Resultados do cenario de demonstracao">
+        <div className="showcase-badge"><Leaf size={15} /> Cenario demonstrativo</div>
+        <div className="showcase-figure">
+          <span className="showcase-value">{dec(metrics.kg)}</span>
+          <span className="showcase-unit">kg de PET reciclados no predio</span>
+        </div>
+        <div className="showcase-stats">
+          <div><b>{num(metrics.garrafas)}</b><span>garrafas fora do aterro</span></div>
+          <div><b>{metrics.co2Toneladas} t</b><span>CO2 evitado</span></div>
+          <div><b>{brl(receita)}</b><span>receita ao condominio</span></div>
+        </div>
+        <div className="showcase-foot"><Recycle size={15} /> {BRAND.name} Station · compactador + app + cooperativa</div>
       </section>
     </main>
   );

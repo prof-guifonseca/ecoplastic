@@ -6,6 +6,7 @@ import { ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card, KpiCard } from '@/components/ui/primitives';
 import { ChartSkeleton } from '@/components/ui/skeleton';
+import { CUSTO_REMOCAO_MES } from '@/content/financial-assumptions';
 import { brl, dec, dt, initials, num, pct } from '@/domain/format';
 import {
   metricasEsg,
@@ -38,6 +39,11 @@ export function DashboardScreen() {
   const ocupacao = Math.round((state.maquina.ocupadoKg / state.maquina.capacidadeKg) * 100);
   const top = ranking(state, 3);
   const prox = proximaAgendada(state);
+  const split = state.configPontos.splitCondominio;
+  const receitaLiquida = receita * split;
+  const antes = CUSTO_REMOCAO_MES.value;
+  const giro = antes + receitaLiquida;
+  const baMax = Math.max(antes, receitaLiquida) || 1;
 
   return (
     <>
@@ -50,7 +56,7 @@ export function DashboardScreen() {
 
       <section className="hero">
         <div>
-          <h2>Em {new Date().toLocaleDateString('pt-BR', { month: 'long' })}, o lixo do predio gerou {brl(receita * state.configPontos.splitCondominio)} em receita.</h2>
+          <h2>Em {new Date().toLocaleDateString('pt-BR', { month: 'long' })}, o lixo do predio gerou {brl(receitaLiquida)} em receita.</h2>
           <p>{dec(kg)} kg de PET reciclados · {num(metrics.garrafas)} garrafas · CO2 evitado: {metrics.co2Toneladas} t</p>
         </div>
         <div className={cn('pill', receitaVar.pct < 0 && 'neg')}>
@@ -60,7 +66,7 @@ export function DashboardScreen() {
 
       <div className="grid grid-4 mb-4">
         <KpiCard label="Reciclado" value={`${dec(kg)} kg`} delta={`${kgVar >= 0 ? '▲' : '▼'} ${pct(Math.abs(kgVar), 100)} vs mes ant.`} negative={kgVar < 0} />
-        <KpiCard label="Receita do condominio" value={brl(receita * state.configPontos.splitCondominio)} delta={`${receitaVar.abs >= 0 ? '▲' : '▼'} ${brl(Math.abs(receitaVar.abs * state.configPontos.splitCondominio))}`} negative={receitaVar.abs < 0} />
+        <KpiCard label="Receita do condominio" value={brl(receitaLiquida)} delta={`${receitaVar.abs >= 0 ? '▲' : '▼'} ${brl(Math.abs(receitaVar.abs * state.configPontos.splitCondominio))}`} negative={receitaVar.abs < 0} />
         <KpiCard label="Moradores ativos" value={`${ativos}/${cadastrados}`} delta={`${pct(ativos, cadastrados || 1)} de adesao`} />
         <KpiCard label="CO2 evitado" value={`${metrics.co2Toneladas} t`} delta="acumulado" />
       </div>
@@ -72,16 +78,20 @@ export function DashboardScreen() {
         </Card>
         <Card>
           <h3>Antes x Depois</h3>
-          <div className="grid grid-2">
-            <div>
-              <div className="label">Antes</div>
-              <div className="big text-danger">-{brl(320)}</div>
-              <p className="sub">despesa mensal com remocao</p>
+          <div className="ba-compare">
+            <div className="ba-row">
+              <div className="ba-head"><span className="label">Antes</span><b className="text-danger">-{brl(antes)}</b></div>
+              <div className="ba-track"><div className="ba-fill neg" style={{ width: `${(antes / baMax) * 100}%` }} /></div>
+              <p className="sub">despesa mensal com remocao (estimativa demonstrativa)</p>
             </div>
-            <div>
-              <div className="label">Agora</div>
-              <div className="big text-brand">+{brl(receita * state.configPontos.splitCondominio)}</div>
+            <div className="ba-row">
+              <div className="ba-head"><span className="label">Agora</span><b className="text-brand">+{brl(receitaLiquida)}</b></div>
+              <div className="ba-track"><div className="ba-fill pos" style={{ width: `${(receitaLiquida / baMax) * 100}%` }} /></div>
               <p className="sub">receita liquida do condominio</p>
+            </div>
+            <div className="ba-result">
+              <span>Giro mensal do condominio</span>
+              <b className="text-brand">+{brl(giro)}</b>
             </div>
           </div>
         </Card>

@@ -9,6 +9,11 @@ export interface LoadResult {
   error?: string;
 }
 
+export interface SaveResult {
+  ok: boolean;
+  error?: string;
+}
+
 function parseJson(raw: string | null) {
   if (!raw) return null;
   return JSON.parse(raw) as unknown;
@@ -24,11 +29,13 @@ export function loadPersistedState(): LoadResult {
   }
 }
 
-export function saveState(state: EcoPlasticState) {
+export function saveState(state: EcoPlasticState): SaveResult {
   try {
     localStorage.setItem(BRAND.storageKey, JSON.stringify(state));
+    return { ok: true };
   } catch (error) {
     console.error('[EcoPlastic] persist failed', error);
+    return { ok: false, error: error instanceof Error ? error.message : 'falha desconhecida' };
   }
 }
 

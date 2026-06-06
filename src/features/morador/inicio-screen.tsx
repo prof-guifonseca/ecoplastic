@@ -3,7 +3,7 @@
 import { EmptyState } from '@/components/ui/primitives';
 import { feedIcon, MapPin, medalIcon, Recycle } from '@/components/ui/icons';
 import { cn } from '@/lib/utils';
-import { brl, num, rel } from '@/domain/format';
+import { brl, dec, num, rel } from '@/domain/format';
 import { moradorAtual, posicaoDe, ranking, transacoesDoMorador } from '@/domain/selectors';
 import { useEcoPlastic } from '@/store/ecoplastic-store';
 
@@ -18,6 +18,11 @@ export function InicioMoradorScreen() {
   const minhaPos = posicaoDe(state, morador.id);
   const hora = new Date().getHours();
   const cumprimento = hora < 12 ? 'Bom dia' : hora < 18 ? 'Boa tarde' : 'Boa noite';
+  const proxima = [...state.recompensas]
+    .filter((recompensa) => recompensa.custoPontos > morador.pontos)
+    .sort((a, b) => a.custoPontos - b.custoPontos)[0];
+  const faltam = proxima ? proxima.custoPontos - morador.pontos : 0;
+  const progresso = proxima ? Math.min(100, Math.round((morador.pontos / proxima.custoPontos) * 100)) : 100;
 
   return (
     <>
@@ -26,6 +31,17 @@ export function InicioMoradorScreen() {
         <div className="eyebrow">Seu saldo</div>
         <div className="pts">{num(morador.pontos)} pts</div>
         <div>≈ {brl(equiv)} de desconto disponivel</div>
+        <div className="p-balance-goal">
+          <div className="p-balance-goal-track"><div className="p-balance-goal-fill" style={{ width: `${progresso}%` }} /></div>
+          <div className="p-balance-goal-label">
+            {proxima ? <>Faltam <b>{num(faltam)} pts</b> para {proxima.titulo}</> : 'Voce ja pode resgatar todas as recompensas!'}
+          </div>
+        </div>
+      </div>
+
+      <div className="p-ministats">
+        <div><b>{dec(morador.kgTotal)} kg</b><span>reciclados por voce</span></div>
+        <div><b>#{minhaPos}</b><span>no ranking do predio</span></div>
       </div>
 
       <div className="p-section-title">Atividade recente</div>
